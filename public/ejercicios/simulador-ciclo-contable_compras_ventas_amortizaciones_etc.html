@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador del Ciclo Contable — Libro Mayor, Diario, IVA y Cierre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Space+Mono:wght@400;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cover:#1F3D2E;
+    --cover-dark:#132920;
+    --gold:#A98544;
+    --gold-light:#C9A96A;
+    --paper:#F6F1E3;
+    --paper-line:#DCCFAE;
+    --ink:#1C2B3A;
+    --ink-soft:#4C5B6B;
+    --red:#8C2F2F;
+    --red-soft:#B4544B;
+    --green-ok:#2F5D42;
+    --shadow:0 10px 30px rgba(19,41,32,.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cover-dark);
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(255,255,255,.05), transparent 60%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,.015) 0 2px, transparent 2px 6px);
+    font-family:'Source Sans 3', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .book{
+    max-width:1180px;
+    margin:0 auto;
+    background:var(--cover);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    padding:10px 10px 24px;
+  }
+  .spine{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    padding:20px 22px 18px;
+    border-bottom:2px solid var(--gold);
+    color:#F1E9D3;
+  }
+  .spine h1{
+    font-family:'Lora', serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:1.55rem;
+    margin:0;
+    letter-spacing:.2px;
+  }
+  .spine p{
+    margin:4px 0 0;
+    font-size:.85rem;
+    color:#C8BE9E;
+    font-family:'Space Mono', monospace;
+  }
+  .badge-year{
+    font-family:'Space Mono', monospace;
+    font-size:.78rem;
+    background:var(--gold);
+    color:var(--cover-dark);
+    padding:5px 10px;
+    border-radius:3px;
+    white-space:nowrap;
+    height:fit-content;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:190px 1fr;
+    gap:0;
+    margin-top:16px;
+  }
+
+  /* Tabs styled as ledger index dividers */
+  .tabs{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:6px 8px 6px 0;
+  }
+  .tab-btn{
+    text-align:left;
+    background:var(--cover-dark);
+    color:#D8CFB2;
+    border:none;
+    border-left:4px solid transparent;
+    padding:11px 12px;
+    font-family:'Lora', serif;
+    font-size:.92rem;
+    font-weight:600;
+    cursor:pointer;
+    border-radius:2px 8px 8px 2px;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .tab-btn:hover{background:#20382C; color:#F1E9D3;}
+  .tab-btn.active{
+    background:var(--paper);
+    color:var(--ink);
+    border-left-color:var(--red);
+  }
+  .tab-btn small{display:block; font-family:'Space Mono',monospace; font-weight:400; font-size:.68rem; color:inherit; opacity:.65; margin-top:2px;}
+
+  .page{
+    background:var(--paper);
+    border-radius:8px;
+    padding:26px 30px 30px;
+    position:relative;
+    min-height:520px;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size:100% 34px;
+    background-position:0 84px;
+  }
+  .page::before{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left:64px;
+    width:2px;
+    background:var(--red-soft);
+    opacity:.55;
+  }
+  .page-inner{position:relative; z-index:1;}
+
+  h2.section-title{
+    font-family:'Lora', serif;
+    font-style:italic;
+    font-weight:700;
+    font-size:1.3rem;
+    margin:0 0 4px;
+    color:var(--cover);
+  }
+  .section-sub{
+    font-size:.86rem;
+    color:var(--ink-soft);
+    margin:0 0 20px;
+    max-width:70ch;
+  }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:16px 18px;
+    margin-bottom:18px;
+  }
+  label{
+    display:block;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--cover);
+    margin-bottom:5px;
+  }
+  input[type=text], input[type=number], input[type=date], select{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    background:#FFFDF7;
+    font-family:'Space Mono', monospace;
+    font-size:.86rem;
+    color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--gold-light); outline-offset:1px;}
+  .full{grid-column:1/-1;}
+  .checkline{display:flex; align-items:center; gap:8px; margin-top:6px;}
+  .checkline input{width:auto;}
+
+  .preview{
+    background:#FFFDF7;
+    border:1px dashed var(--paper-line);
+    border-radius:6px;
+    padding:12px 14px;
+    font-family:'Space Mono', monospace;
+    font-size:.82rem;
+    color:var(--ink-soft);
+    margin-bottom:16px;
+    min-height:20px;
+  }
+  .preview b{color:var(--cover);}
+
+  button.primary{
+    background:var(--cover);
+    color:#F6F1E3;
+    border:none;
+    padding:11px 20px;
+    border-radius:5px;
+    font-family:'Lora', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:.95rem;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button.primary:hover{background:#2A4E3A;}
+  button.primary:active{transform:translateY(1px);}
+  button.ghost{
+    background:transparent;
+    border:1px solid var(--cover);
+    color:var(--cover);
+    padding:9px 16px;
+    border-radius:5px;
+    font-family:'Space Mono',monospace;
+    font-size:.78rem;
+    cursor:pointer;
+  }
+  button.ghost:hover{background:rgba(31,61,46,.08);}
+  button.danger{border-color:var(--red); color:var(--red);}
+  button:disabled{opacity:.45; cursor:not-allowed;}
+
+  .msg{
+    font-size:.82rem;
+    padding:9px 12px;
+    border-radius:5px;
+    margin-bottom:14px;
+    font-family:'Space Mono',monospace;
+  }
+  .msg.ok{background:rgba(47,93,66,.12); color:var(--green-ok); border:1px solid rgba(47,93,66,.3);}
+  .msg.warn{background:rgba(140,47,47,.1); color:var(--red); border:1px solid rgba(140,47,47,.3);}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'Space Mono', monospace;
+    font-size:.82rem;
+  }
+  th{
+    text-align:left;
+    font-family:'Source Sans 3',sans-serif;
+    font-weight:600;
+    font-size:.72rem;
+    letter-spacing:.02em;
+    color:var(--cover);
+    border-bottom:2px solid var(--gold);
+    padding:6px 8px;
+  }
+  td{
+    padding:6px 8px;
+    border-bottom:1px solid var(--paper-line);
+    color:var(--ink);
+  }
+  td.num, th.num{text-align:right; white-space:nowrap;}
+  tr.entry-head td{
+    background:rgba(169,133,68,.14);
+    font-weight:700;
+    font-family:'Lora',serif;
+    font-style:italic;
+    color:var(--cover);
+    padding-top:12px;
+  }
+  tr.totals td{
+    border-top:2px solid var(--ink);
+    font-weight:700;
+  }
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-style:italic;
+    padding:34px 10px;
+    font-family:'Lora',serif;
+  }
+
+  .mayor-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:18px;
+  }
+  .t-account{
+    background:#FFFDF7;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .t-account h3{
+    margin:0;
+    padding:9px 12px;
+    background:var(--cover);
+    color:#F6F1E3;
+    font-family:'Lora',serif;
+    font-size:.9rem;
+    font-style:italic;
+  }
+  .t-body{display:grid; grid-template-columns:1fr 1fr;}
+  .t-side{padding:8px; font-family:'Space Mono',monospace; font-size:.76rem;}
+  .t-side.debe{border-right:1px solid var(--red-soft);}
+  .t-side .row{display:flex; justify-content:space-between; gap:6px; padding:3px 0; border-bottom:1px dotted var(--paper-line);}
+  .t-side .lbl{color:var(--ink-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;}
+  .t-foot{
+    grid-column:1/-1;
+    display:flex; justify-content:space-between;
+    padding:8px 12px;
+    background:rgba(169,133,68,.12);
+    font-size:.78rem;
+    font-weight:700;
+  }
+
+  .kpi-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px;}
+  .kpi{
+    background:#FFFDF7; border:1px solid var(--paper-line); border-radius:6px;
+    padding:14px 16px;
+  }
+  .kpi .lbl{font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .kpi .val{font-family:'Space Mono',monospace; font-size:1.3rem; font-weight:700; color:var(--cover); margin-top:4px;}
+  .kpi.result .val.pos{color:var(--green-ok);}
+  .kpi.result .val.neg{color:var(--red);}
+
+  .steps{display:flex; flex-direction:column; gap:14px; margin-top:18px;}
+  .step{
+    background:#FFFDF7; border:1px solid var(--paper-line); border-radius:6px;
+    padding:16px 18px;
+  }
+  .step h4{margin:0 0 6px; font-family:'Lora',serif; font-style:italic; color:var(--cover); font-size:1.02rem;}
+  .step p{margin:0 0 10px; font-size:.84rem; color:var(--ink-soft);}
+  .step.done{border-left:4px solid var(--green-ok);}
+  .step.locked{opacity:.5;}
+
+  .footer-note{
+    text-align:center; font-size:.72rem; color:#B7AD8C;
+    margin-top:16px; font-family:'Space Mono',monospace;
+  }
+  @media (max-width:760px){
+    .layout{grid-template-columns:1fr;}
+    .tabs{flex-direction:row; overflow-x:auto; padding:6px 0;}
+    .tab-btn{border-left:none; border-bottom:4px solid transparent; border-radius:6px 6px 0 0; white-space:nowrap;}
+    .tab-btn.active{border-left-color:transparent; border-bottom-color:var(--red);}
+    .page::before{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="book">
+  <div class="spine">
+    <div>
+      <h1>Libro del Ejercicio — Simulador del Ciclo Contable</h1>
+      <p>Compras · Ventas · Nóminas · Amortizaciones · IVA · Cierre anual (PGC simplificado, España)</p>
+    </div>
+    <div class="badge-year" id="badge-year">Ejercicio abierto</div>
+  </div>
+
+  <div class="layout">
+    <div class="tabs" id="tabs"></div>
+    <div class="page">
+      <div class="page-inner" id="panel"></div>
+    </div>
+  </div>
+  <div class="footer-note">Herramienta educativa · los datos existen solo en esta sesión del navegador · nº de cuenta según el Plan General de Contabilidad</div>
+</div>
+
+<script>
+/* =======================================================================
+   MODELO DE DATOS
+======================================================================= */
+const CUENTAS = {
+  '400':'Proveedores',
+  '430':'Clientes',
+  '4700':'H.P. deudora por IVA',
+  '4751':'H.P. acreedora por retenciones practicadas',
+  '4750':'H.P. acreedora por IVA',
+  '472':'H.P. IVA soportado',
+  '477':'H.P. IVA repercutido',
+  '476':'Organismos de la Seguridad Social, acreedores',
+  '465':'Remuneraciones pendientes de pago',
+  '570':'Caja',
+  '572':'Bancos, c/c',
+  '600':'Compras de mercaderías',
+  '700':'Ventas de mercaderías',
+  '640':'Sueldos y salarios',
+  '642':'Seguridad Social a cargo de la empresa',
+  '681':'Amortización del inmovilizado material',
+  '281':'Amortización acumulada del inmovilizado material',
+  '129':'Resultado del ejercicio'
+};
+const GASTOS = ['600','640','642','681'];
+const INGRESOS = ['700'];
+
+let asientos = [];     // {num, fecha, concepto, lineas:[{cuenta,debe,haber}]}
+let contador = 1;
+let ejercicioCerrado = false;
+let cierreInfo = null;
+
+function nombreCuenta(c){ return CUENTAS[c] || c; }
+function fmt(n){
+  n = Math.round((n + Number.EPSILON) * 100) / 100;
+  return n.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+
+function addAsiento(fecha, concepto, lineas){
+  lineas = lineas.filter(l => Math.abs(l.debe) > 0.004 || Math.abs(l.haber) > 0.004);
+  asientos.push({num: contador++, fecha, concepto, lineas});
+  refreshAll();
+}
+
+/* =======================================================================
+   CÁLCULOS DERIVADOS: MAYOR Y BALANCE DE SUMAS Y SALDOS
+======================================================================= */
+function calcularMayor(){
+  const mayor = {}; // cuenta -> {movs:[], sumaDebe, sumaHaber}
+  asientos.forEach(a=>{
+    a.lineas.forEach(l=>{
+      if(!mayor[l.cuenta]) mayor[l.cuenta] = {movs:[], sumaDebe:0, sumaHaber:0};
+      mayor[l.cuenta].movs.push({fecha:a.fecha, concepto:a.concepto, debe:l.debe, haber:l.haber, num:a.num});
+      mayor[l.cuenta].sumaDebe += l.debe;
+      mayor[l.cuenta].sumaHaber += l.haber;
+    });
+  });
+  return mayor;
+}
+function calcularBalanceSumasYSaldos(){
+  const mayor = calcularMayor();
+  return Object.keys(mayor).sort().map(c=>{
+    const m = mayor[c];
+    const saldo = m.sumaDebe - m.sumaHaber;
+    return {
+      cuenta:c, nombre:nombreCuenta(c),
+      sumaDebe:m.sumaDebe, sumaHaber:m.sumaHaber,
+      saldoDeudor: saldo>0?saldo:0, saldoAcreedor: saldo<0?-saldo:0
+    };
+  });
+}
+function saldoCuenta(cuenta){
+  const mayor = calcularMayor();
+  if(!mayor[cuenta]) return 0;
+  return mayor[cuenta].sumaDebe - mayor[cuenta].sumaHaber; // >0 deudor, <0 acreedor
+}
+
+/* =======================================================================
+   TABS / NAVEGACIÓN
+======================================================================= */
+const TABS = [
+  {id:'compras', label:'Compras', hint:'grupo 60·47'},
+  {id:'ventas', label:'Ventas', hint:'grupo 70·47'},
+  {id:'nominas', label:'Nóminas', hint:'grupo 64·46'},
+  {id:'amortizaciones', label:'Amortizaciones', hint:'grupo 68·28'},
+  {id:'diario', label:'Libro Diario', hint:'todos los asientos'},
+  {id:'mayor', label:'Libro Mayor', hint:'cuentas en T'},
+  {id:'balance', label:'Sumas y saldos', hint:'balance de comprobación'},
+  {id:'cierre', label:'Cierre anual', hint:'IVA · P y G · cierre'}
+];
+let activeTab = 'compras';
+
+function renderTabs(){
+  const box = document.getElementById('tabs');
+  box.innerHTML = '';
+  TABS.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'tab-btn' + (t.id===activeTab?' active':'');
+    b.innerHTML = t.label + '<small>'+t.hint+'</small>';
+    b.onclick = ()=>{ activeTab = t.id; render(); };
+    box.appendChild(b);
+  });
+}
+
+function render(){
+  renderTabs();
+  document.getElementById('badge-year').textContent = ejercicioCerrado ? 'Ejercicio cerrado' : 'Ejercicio abierto · nº asientos: ' + asientos.length;
+  const panel = document.getElementById('panel');
+  const renderers = {
+    compras: renderCompras, ventas: renderVentas, nominas: renderNominas,
+    amortizaciones: renderAmortizaciones, diario: renderDiario, mayor: renderMayor,
+    balance: renderBalance, cierre: renderCierre
+  };
+  panel.innerHTML = '';
+  renderers[activeTab](panel);
+}
+function refreshAll(){ render(); }
+
+/* =======================================================================
+   COMPRAS
+======================================================================= */
+function renderCompras(panel){
+  panel.innerHTML = `
+    <h2 class="section-title">Registrar una compra</h2>
+    <p class="section-sub">Se genera automáticamente el IVA soportado (472) y se anota la contrapartida según la forma de pago.</p>
+    ${ejercicioCerrado ? '<div class="msg warn">El ejercicio está cerrado. Inicia uno nuevo para seguir contabilizando.</div>' : ''}
+    <div class="form-grid">
+      <div><label>Fecha</label><input type="date" id="c-fecha" value="${today()}"></div>
+      <div class="full"><label>Concepto / proveedor</label><input type="text" id="c-concepto" placeholder="Compra de mercaderías, factura nº ..."></div>
+      <div><label>Base imponible (€)</label><input type="number" id="c-base" min="0" step="0.01" placeholder="1000.00"></div>
+      <div><label>% IVA</label>
+        <select id="c-iva"><option value="21">21% general</option><option value="10">10% reducido</option><option value="4">4% superreducido</option><option value="0">0% exento</option></select>
+      </div>
+      <div><label>Forma de pago</label>
+        <select id="c-pago"><option value="400">A crédito (Proveedores, 400)</option><option value="570">Al contado (Caja, 570)</option><option value="572">Con banco (Bancos, 572)</option></select>
+      </div>
+    </div>
+    <div class="preview" id="c-preview">Introduce los importes para ver el asiento previo.</div>
+    <button class="primary" id="c-btn" ${ejercicioCerrado?'disabled':''}>Contabilizar compra</button>
+  `;
+  const upd = ()=>{
+    const base = parseFloat(document.getElementById('c-base').value)||0;
+    const pct = parseFloat(document.getElementById('c-iva').value)||0;
+    const iva = base*pct/100, total = base+iva;
+    const pago = document.getElementById('c-pago').value;
+    document.getElementById('c-preview').innerHTML = base>0 ? `
+      <b>(600)</b> Compras de mercaderías ....... ${fmt(base)} €  (Debe)<br>
+      <b>(472)</b> H.P. IVA soportado ............ ${fmt(iva)} €  (Debe)<br>
+      <b>(${pago})</b> ${nombreCuenta(pago)} ....... ${fmt(total)} €  (Haber)` : 'Introduce los importes para ver el asiento previo.';
+  };
+  ['c-base','c-iva','c-pago'].forEach(id=>document.getElementById(id).addEventListener('input',upd));
+  upd();
+  document.getElementById('c-btn').onclick = ()=>{
+    const base = parseFloat(document.getElementById('c-base').value)||0;
+    if(base<=0){ alert('Indica una base imponible mayor que cero.'); return; }
+    const pct = parseFloat(document.getElementById('c-iva').value)||0;
+    const iva = round2(base*pct/100);
+    const total = round2(base+iva);
+    const pago = document.getElementById('c-pago').value;
+    const fecha = document.getElementById('c-fecha').value || today();
+    const concepto = document.getElementById('c-concepto').value || 'Compra de mercaderías';
+    addAsiento(fecha, concepto, [
+      {cuenta:'600', debe:base, haber:0},
+      {cuenta:'472', debe:iva, haber:0},
+      {cuenta:pago, debe:0, haber:total}
+    ]);
+    activeTab='diario'; render();
+  };
+}
+
+/* =======================================================================
+   VENTAS
+======================================================================= */
+function renderVentas(panel){
+  panel.innerHTML = `
+    <h2 class="section-title">Registrar una venta</h2>
+    <p class="section-sub">Se genera automáticamente el IVA repercutido (477) sobre la base imponible.</p>
+    ${ejercicioCerrado ? '<div class="msg warn">El ejercicio está cerrado. Inicia uno nuevo para seguir contabilizando.</div>' : ''}
+    <div class="form-grid">
+      <div><label>Fecha</label><input type="date" id="v-fecha" value="${today()}"></div>
+      <div class="full"><label>Concepto / cliente</label><input type="text" id="v-concepto" placeholder="Venta de mercaderías, factura nº ..."></div>
+      <div><label>Base imponible (€)</label><input type="number" id="v-base" min="0" step="0.01" placeholder="1500.00"></div>
+      <div><label>% IVA</label>
+        <select id="v-iva"><option value="21">21% general</option><option value="10">10% reducido</option><option value="4">4% superreducido</option><option value="0">0% exento</option></select>
+      </div>
+      <div><label>Forma de cobro</label>
+        <select id="v-cobro"><option value="430">A crédito (Clientes, 430)</option><option value="570">Al contado (Caja, 570)</option><option value="572">Con banco (Bancos, 572)</option></select>
+      </div>
+    </div>
+    <div class="preview" id="v-preview">Introduce los importes para ver el asiento previo.</div>
+    <button class="primary" id="v-btn" ${ejercicioCerrado?'disabled':''}>Contabilizar venta</button>
+  `;
+  const upd = ()=>{
+    const base = parseFloat(document.getElementById('v-base').value)||0;
+    const pct = parseFloat(document.getElementById('v-iva').value)||0;
+    const iva = base*pct/100, total = base+iva;
+    const cobro = document.getElementById('v-cobro').value;
+    document.getElementById('v-preview').innerHTML = base>0 ? `
+      <b>(${cobro})</b> ${nombreCuenta(cobro)} ....... ${fmt(total)} €  (Debe)<br>
+      <b>(700)</b> Ventas de mercaderías ....... ${fmt(base)} €  (Haber)<br>
+      <b>(477)</b> H.P. IVA repercutido ........ ${fmt(iva)} €  (Haber)` : 'Introduce los importes para ver el asiento previo.';
+  };
+  ['v-base','v-iva','v-cobro'].forEach(id=>document.getElementById(id).addEventListener('input',upd));
+  upd();
+  document.getElementById('v-btn').onclick = ()=>{
+    const base = parseFloat(document.getElementById('v-base').value)||0;
+    if(base<=0){ alert('Indica una base imponible mayor que cero.'); return; }
+    const pct = parseFloat(document.getElementById('v-iva').value)||0;
+    const iva = round2(base*pct/100);
+    const total = round2(base+iva);
+    const cobro = document.getElementById('v-cobro').value;
+    const fecha = document.getElementById('v-fecha').value || today();
+    const concepto = document.getElementById('v-concepto').value || 'Venta de mercaderías';
+    addAsiento(fecha, concepto, [
+      {cuenta:cobro, debe:total, haber:0},
+      {cuenta:'700', debe:0, haber:base},
+      {cuenta:'477', debe:0, haber:iva}
+    ]);
+    activeTab='diario'; render();
+  };
+}
+
+/* =======================================================================
+   NÓMINAS
+======================================================================= */
+function renderNominas(panel){
+  panel.innerHTML = `
+    <h2 class="section-title">Registrar una nómina</h2>
+    <p class="section-sub">Se calculan la retención de IRPF, la cuota del trabajador y el coste de Seguridad Social a cargo de la empresa.</p>
+    ${ejercicioCerrado ? '<div class="msg warn">El ejercicio está cerrado. Inicia uno nuevo para seguir contabilizando.</div>' : ''}
+    <div class="form-grid">
+      <div><label>Fecha de devengo</label><input type="date" id="n-fecha" value="${today()}"></div>
+      <div class="full"><label>Concepto</label><input type="text" id="n-concepto" placeholder="Nómina del mes de ..."></div>
+      <div><label>Salario bruto (€)</label><input type="number" id="n-bruto" min="0" step="0.01" placeholder="2000.00"></div>
+      <div><label>% retención IRPF</label><input type="number" id="n-irpf" min="0" max="100" step="0.1" value="15"></div>
+      <div><label>% SS trabajador</label><input type="number" id="n-sstrab" min="0" max="100" step="0.1" value="6.35"></div>
+      <div><label>% SS empresa</label><input type="number" id="n-ssemp" min="0" max="100" step="0.1" value="30"></div>
+      <div><label>Pago del neto</label>
+        <select id="n-pago"><option value="none">Queda pendiente de pago (465)</option><option value="572">Se paga ya por banco</option><option value="570">Se paga ya en caja</option></select>
+      </div>
+    </div>
+    <div class="preview" id="n-preview">Introduce el salario bruto para ver el cálculo.</div>
+    <button class="primary" id="n-btn" ${ejercicioCerrado?'disabled':''}>Contabilizar nómina</button>
+  `;
+  const upd = ()=>{
+    const bruto = parseFloat(document.getElementById('n-bruto').value)||0;
+    const irpfPct = parseFloat(document.getElementById('n-irpf').value)||0;
+    const ssTrabPct = parseFloat(document.getElementById('n-sstrab').value)||0;
+    const ssEmpPct = parseFloat(document.getElementById('n-ssemp').value)||0;
+    const irpf = bruto*irpfPct/100, ssTrab = bruto*ssTrabPct/100, ssEmp = bruto*ssEmpPct/100;
+    const neto = bruto - irpf - ssTrab;
+    document.getElementById('n-preview').innerHTML = bruto>0 ? `
+      <u>Devengo</u><br>
+      <b>(640)</b> Sueldos y salarios ............... ${fmt(bruto)} €  (Debe)<br>
+      <b>(4751)</b> H.P. acreedora, retenciones ....... ${fmt(irpf)} €  (Haber)<br>
+      <b>(476)</b> Seguridad Social, acreedora ........ ${fmt(ssTrab)} €  (Haber)<br>
+      <b>(465)</b> Remuneraciones pendientes de pago ... ${fmt(neto)} €  (Haber)<br><br>
+      <u>Coste empresarial</u><br>
+      <b>(642)</b> S.S. a cargo de la empresa ......... ${fmt(ssEmp)} €  (Debe)<br>
+      <b>(476)</b> Seguridad Social, acreedora ........ ${fmt(ssEmp)} €  (Haber)<br><br>
+      Neto a percibir por el trabajador: <b>${fmt(neto)} €</b>` : 'Introduce el salario bruto para ver el cálculo.';
+  };
+  ['n-bruto','n-irpf','n-sstrab','n-ssemp'].forEach(id=>document.getElementById(id).addEventListener('input',upd));
+  upd();
+  document.getElementById('n-btn').onclick = ()=>{
+    const bruto = parseFloat(document.getElementById('n-bruto').value)||0;
+    if(bruto<=0){ alert('Indica un salario bruto mayor que cero.'); return; }
+    const irpfPct = parseFloat(document.getElementById('n-irpf').value)||0;
+    const ssTrabPct = parseFloat(document.getElementById('n-sstrab').value)||0;
+    const ssEmpPct = parseFloat(document.getElementById('n-ssemp').value)||0;
+    const irpf = round2(bruto*irpfPct/100), ssTrab = round2(bruto*ssTrabPct/100), ssEmp = round2(bruto*ssEmpPct/100);
+    const neto = round2(bruto - irpf - ssTrab);
+    const fecha = document.getElementById('n-fecha').value || today();
+    const concepto = document.getElementById('n-concepto').value || 'Nómina';
+    addAsiento(fecha, concepto + ' — devengo', [
+      {cuenta:'640', debe:bruto, haber:0},
+      {cuenta:'4751', debe:0, haber:irpf},
+      {cuenta:'476', debe:0, haber:ssTrab},
+      {cuenta:'465', debe:0, haber:neto}
+    ]);
+    addAsiento(fecha, concepto + ' — coste Seguridad Social empresa', [
+      {cuenta:'642', debe:ssEmp, haber:0},
+      {cuenta:'476', debe:0, haber:ssEmp}
+    ]);
+    const pago = document.getElementById('n-pago').value;
+    if(pago !== 'none'){
+      addAsiento(fecha, concepto + ' — pago del neto', [
+        {cuenta:'465', debe:neto, haber:0},
+        {cuenta:pago, debe:0, haber:neto}
+      ]);
+    }
+    activeTab='diario'; render();
+  };
+}
+
+/* =======================================================================
+   AMORTIZACIONES
+======================================================================= */
+function renderAmortizaciones(panel){
+  panel.innerHTML = `
+    <h2 class="section-title">Registrar la amortización de un activo</h2>
+    <p class="section-sub">La cuota anual se calcula como Valor amortizable × % de amortización, y se acumula en la cuenta 281.</p>
+    ${ejercicioCerrado ? '<div class="msg warn">El ejercicio está cerrado. Inicia uno nuevo para seguir contabilizando.</div>' : ''}
+    <div class="form-grid">
+      <div><label>Fecha</label><input type="date" id="a-fecha" value="${today()}"></div>
+      <div class="full"><label>Activo</label><input type="text" id="a-activo" placeholder="Maquinaria, mobiliario, equipo informático..."></div>
+      <div><label>Valor amortizable (€)</label><input type="number" id="a-valor" min="0" step="0.01" placeholder="10000.00"></div>
+      <div><label>Método</label>
+        <select id="a-metodo"><option value="pct">% anual de amortización</option><option value="vida">Vida útil en años</option></select>
+      </div>
+      <div id="a-campo-metodo"><label>% anual</label><input type="number" id="a-pct" min="0" max="100" step="0.1" value="10"></div>
+    </div>
+    <div class="preview" id="a-preview">Introduce el valor amortizable para ver la cuota anual.</div>
+    <button class="primary" id="a-btn" ${ejercicioCerrado?'disabled':''}>Contabilizar amortización</button>
+  `;
+  const metodoSel = document.getElementById('a-metodo');
+  const campo = document.getElementById('a-campo-metodo');
+  metodoSel.onchange = ()=>{
+    if(metodoSel.value==='pct'){
+      campo.innerHTML = '<label>% anual</label><input type="number" id="a-pct" min="0" max="100" step="0.1" value="10">';
+    } else {
+      campo.innerHTML = '<label>Vida útil (años)</label><input type="number" id="a-anos" min="1" step="1" value="10">';
+    }
+    document.getElementById(metodoSel.value==='pct'?'a-pct':'a-anos').addEventListener('input',upd);
+    upd();
+  };
+  function cuotaAnual(){
+    const valor = parseFloat(document.getElementById('a-valor').value)||0;
+    if(metodoSel.value==='pct'){
+      const pct = parseFloat(document.getElementById('a-pct').value)||0;
+      return valor*pct/100;
+    } else {
+      const anos = parseFloat(document.getElementById('a-anos').value)||1;
+      return valor/anos;
+    }
+  }
+  function upd(){
+    const cuota = cuotaAnual();
+    document.getElementById('a-preview').innerHTML = cuota>0 ? `
+      <b>(681)</b> Amortización del inmovilizado material ....... ${fmt(cuota)} €  (Debe)<br>
+      <b>(281)</b> Amortización acumulada del inmov. material ... ${fmt(cuota)} €  (Haber)` : 'Introduce el valor amortizable para ver la cuota anual.';
+  }
+  document.getElementById('a-valor').addEventListener('input',upd);
+  document.getElementById('a-pct').addEventListener('input',upd);
+  upd();
+  document.getElementById('a-btn').onclick = ()=>{
+    const cuota = round2(cuotaAnual());
+    if(cuota<=0){ alert('El importe de la cuota debe ser mayor que cero.'); return; }
+    const fecha = document.getElementById('a-fecha').value || today();
+    const activo = document.getElementById('a-activo').value || 'inmovilizado material';
+    addAsiento(fecha, 'Amortización del ejercicio — ' + activo, [
+      {cuenta:'681', debe:cuota, haber:0},
+      {cuenta:'281', debe:0, haber:cuota}
+    ]);
+    activeTab='diario'; render();
+  };
+}
+
+/* =======================================================================
+   LIBRO DIARIO
+======================================================================= */
+function renderDiario(panel){
+  let html = `<h2 class="section-title">Libro Diario</h2><p class="section-sub">Todos los asientos contabilizados, por orden cronológico.</p>`;
+  if(asientos.length===0){
+    html += '<div class="empty">Todavía no se ha contabilizado ningún asiento. Empieza por Compras, Ventas, Nóminas o Amortizaciones.</div>';
+    panel.innerHTML = html; return;
+  }
+  html += `<table><thead><tr><th style="width:70px">Nº</th><th style="width:100px">Fecha</th><th style="width:70px">Cuenta</th><th>Denominación</th><th class="num">Debe</th><th class="num">Haber</th></tr></thead><tbody>`;
+  asientos.forEach(a=>{
+    const totalDebe = a.lineas.reduce((s,l)=>s+l.debe,0);
+    html += `<tr class="entry-head"><td>${a.num}</td><td>${a.fecha}</td><td colspan="4">${a.concepto}</td></tr>`;
+    a.lineas.forEach(l=>{
+      html += `<tr><td></td><td></td><td>${l.cuenta}</td><td>${nombreCuenta(l.cuenta)}</td>
+        <td class="num">${l.debe?fmt(l.debe):''}</td><td class="num">${l.haber?fmt(l.haber):''}</td></tr>`;
+    });
+    html += `<tr class="totals"><td></td><td></td><td></td><td>Sumas iguales</td><td class="num">${fmt(totalDebe)}</td><td class="num">${fmt(totalDebe)}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  panel.innerHTML = html;
+}
+
+/* =======================================================================
+   LIBRO MAYOR (cuentas en T)
+======================================================================= */
+function renderMayor(panel){
+  const mayor = calcularMayor();
+  const cuentas = Object.keys(mayor).sort();
+  let html = `<h2 class="section-title">Libro Mayor</h2><p class="section-sub">Movimientos agrupados por cuenta, en formato de cuenta en T.</p>`;
+  if(cuentas.length===0){
+    html += '<div class="empty">Sin movimientos todavía.</div>';
+    panel.innerHTML = html; return;
+  }
+  html += '<div class="mayor-grid">';
+  cuentas.forEach(c=>{
+    const m = mayor[c];
+    const saldo = m.sumaDebe - m.sumaHaber;
+    const debeRows = m.movs.filter(x=>x.debe>0).map(x=>`<div class="row"><span class="lbl" title="${x.concepto}">(${x.num}) ${x.concepto}</span><span>${fmt(x.debe)}</span></div>`).join('');
+    const haberRows = m.movs.filter(x=>x.haber>0).map(x=>`<div class="row"><span class="lbl" title="${x.concepto}">(${x.num}) ${x.concepto}</span><span>${fmt(x.haber)}</span></div>`).join('');
+    html += `
+      <div class="t-account">
+        <h3>(${c}) ${nombreCuenta(c)}</h3>
+        <div class="t-body">
+          <div class="t-side debe">${debeRows || '<span style="opacity:.4">—</span>'}</div>
+          <div class="t-side haber">${haberRows || '<span style="opacity:.4">—</span>'}</div>
+          <div class="t-foot">
+            <span>Debe: ${fmt(m.sumaDebe)}</span>
+            <span>Haber: ${fmt(m.sumaHaber)}</span>
+          </div>
+          <div class="t-foot" style="background:rgba(140,47,47,.08)">
+            <span>Saldo ${saldo>=0?'deudor':'acreedor'}</span>
+            <span>${fmt(Math.abs(saldo))}</span>
+          </div>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+/* =======================================================================
+   BALANCE DE SUMAS Y SALDOS
+======================================================================= */
+function renderBalance(panel){
+  const filas = calcularBalanceSumasYSaldos();
+  let html = `<h2 class="section-title">Balance de comprobación</h2><p class="section-sub">Sumas y saldos de todas las cuentas movidas en el ejercicio.</p>`;
+  if(filas.length===0){
+    html += '<div class="empty">Sin movimientos todavía.</div>';
+    panel.innerHTML = html; return;
+  }
+  const tot = filas.reduce((a,f)=>({d:a.d+f.sumaDebe,h:a.h+f.sumaHaber,sd:a.sd+f.saldoDeudor,sa:a.sa+f.saldoAcreedor}),{d:0,h:0,sd:0,sa:0});
+  html += `<table><thead><tr><th style="width:70px">Cuenta</th><th>Denominación</th><th class="num">Sumas Debe</th><th class="num">Sumas Haber</th><th class="num">Saldo deudor</th><th class="num">Saldo acreedor</th></tr></thead><tbody>`;
+  filas.forEach(f=>{
+    html += `<tr><td>${f.cuenta}</td><td>${f.nombre}</td><td class="num">${fmt(f.sumaDebe)}</td><td class="num">${fmt(f.sumaHaber)}</td>
+      <td class="num">${f.saldoDeudor?fmt(f.saldoDeudor):''}</td><td class="num">${f.saldoAcreedor?fmt(f.saldoAcreedor):''}</td></tr>`;
+  });
+  html += `<tr class="totals"><td></td><td>TOTALES</td><td class="num">${fmt(tot.d)}</td><td class="num">${fmt(tot.h)}</td><td class="num">${fmt(tot.sd)}</td><td class="num">${fmt(tot.sa)}</td></tr>`;
+  html += `</tbody></table>`;
+  panel.innerHTML = html;
+}
+
+/* =======================================================================
+   CIERRE ANUAL
+======================================================================= */
+function renderCierre(panel){
+  let html = `<h2 class="section-title">Cierre del ejercicio</h2><p class="section-sub">Tres pasos, en orden: liquidar el IVA, regularizar ingresos y gastos, y realizar el asiento de cierre.</p>`;
+
+  if(asientos.length===0){
+    html += '<div class="empty">Contabiliza al menos una operación antes de cerrar el ejercicio.</div>';
+    panel.innerHTML = html; return;
+  }
+
+  const saldo472 = Math.max(0, saldoCuenta('472'));
+  const saldo477 = Math.max(0, -saldoCuenta('477'));
+  const ivaHecho = asientos.some(a=>a.concepto.includes('Liquidación de IVA'));
+  const regularizacionHecha = asientos.some(a=>a.concepto.includes('Regularización de ingresos y gastos'));
+
+  html += `
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">IVA soportado (472)</div><div class="val">${fmt(saldo472)} €</div></div>
+      <div class="kpi"><div class="lbl">IVA repercutido (477)</div><div class="val">${fmt(saldo477)} €</div></div>
+      <div class="kpi"><div class="lbl">Diferencia a liquidar</div><div class="val">${fmt(Math.abs(saldo477-saldo472))} € ${saldo477>=saldo472?'(a pagar)':'(a devolver)'}</div></div>
+    </div>
+    <div class="steps">
+      <div class="step ${ivaHecho?'done':''}">
+        <h4>Paso 1 · Liquidación del IVA</h4>
+        <p>Se cancelan las cuentas 472 y 477 entre sí y la diferencia se traslada a Hacienda Pública (4750 si hay que pagar, 4700 si hay que solicitar devolución).</p>
+        <button class="primary" id="btn-iva" ${ivaHecho||ejercicioCerrado?'disabled':''}>${ivaHecho?'IVA ya liquidado':'Liquidar IVA'}</button>
+      </div>
+      <div class="step ${regularizacionHecha?'done':(ivaHecho?'':'locked')}">
+        <h4>Paso 2 · Regularización de ingresos y gastos</h4>
+        <p>Se cancelan las cuentas de los grupos 6 y 7 contra la cuenta 129 (Resultado del ejercicio), para calcular el beneficio o la pérdida.</p>
+        <button class="primary" id="btn-regularizar" ${!ivaHecho||regularizacionHecha||ejercicioCerrado?'disabled':''}>${regularizacionHecha?'Ya regularizado':'Regularizar y calcular resultado'}</button>
+      </div>
+      <div class="step ${ejercicioCerrado?'done':(regularizacionHecha?'':'locked')}">
+        <h4>Paso 3 · Asiento de cierre</h4>
+        <p>Se cancelan todas las cuentas de balance restantes: se abona a las cuentas con saldo deudor y se adeuda a las cuentas con saldo acreedor, por sus importes.</p>
+        <button class="primary" id="btn-cerrar" ${!regularizacionHecha||ejercicioCerrado?'disabled':''}>${ejercicioCerrado?'Ejercicio cerrado':'Realizar asiento de cierre'}</button>
+      </div>
+    </div>
+  `;
+
+  if(regularizacionHecha && cierreInfo){
+    const positivo = cierreInfo.resultado >= 0;
+    html += `
+      <div class="kpi-row" style="margin-top:22px">
+        <div class="kpi"><div class="lbl">Total ingresos</div><div class="val">${fmt(cierreInfo.totalIngresos)} €</div></div>
+        <div class="kpi"><div class="lbl">Total gastos</div><div class="val">${fmt(cierreInfo.totalGastos)} €</div></div>
+        <div class="kpi result"><div class="lbl">${positivo?'Beneficio':'Pérdida'} del ejercicio</div><div class="val ${positivo?'pos':'neg'}">${fmt(Math.abs(cierreInfo.resultado))} €</div></div>
+      </div>
+    `;
+  }
+
+  if(ejercicioCerrado){
+    html += `<div class="msg ok" style="margin-top:18px">El ejercicio se ha cerrado correctamente. El balance de comprobación final debería mostrar todas las cuentas a cero (excepto, en la práctica, las que abren el ejercicio siguiente).</div>
+    <button class="ghost danger" id="btn-nuevo">Iniciar un nuevo ejercicio (borra los datos actuales)</button>`;
+  }
+
+  panel.innerHTML = html;
+
+  const btnIva = document.getElementById('btn-iva');
+  if(btnIva) btnIva.onclick = liquidarIVA;
+  const btnReg = document.getElementById('btn-regularizar');
+  if(btnReg) btnReg.onclick = regularizarResultado;
+  const btnCierre = document.getElementById('btn-cerrar');
+  if(btnCierre) btnCierre.onclick = asientoDeCierre;
+  const btnNuevo = document.getElementById('btn-nuevo');
+  if(btnNuevo) btnNuevo.onclick = nuevoEjercicio;
+}
+
+function liquidarIVA(){
+  const s472 = Math.max(0, saldoCuenta('472'));
+  const s477 = Math.max(0, -saldoCuenta('477'));
+  const lineas = [
+    {cuenta:'477', debe:s477, haber:0},
+    {cuenta:'472', debe:0, haber:s472}
+  ];
+  const diff = round2(s477 - s472);
+  if(diff > 0) lineas.push({cuenta:'4750', debe:0, haber:diff});
+  if(diff < 0) lineas.push({cuenta:'4700', debe:-diff, haber:0});
+  addAsiento(today(), 'Liquidación de IVA del ejercicio', lineas);
+  activeTab='cierre'; render();
+}
+
+function regularizarResultado(){
+  const mayor = calcularMayor();
+  let totalGastos = 0, totalIngresos = 0;
+  const lineas = [];
+  GASTOS.forEach(c=>{
+    const s = mayor[c] ? mayor[c].sumaDebe - mayor[c].sumaHaber : 0;
+    if(s > 0.004){ lineas.push({cuenta:c, debe:0, haber:s}); totalGastos += s; }
+  });
+  INGRESOS.forEach(c=>{
+    const s = mayor[c] ? mayor[c].sumaHaber - mayor[c].sumaDebe : 0;
+    if(s > 0.004){ lineas.push({cuenta:c, debe:s, haber:0}); totalIngresos += s; }
+  });
+  const resultado = round2(totalIngresos - totalGastos);
+  // Equilibrar con la cuenta 129
+  if(totalGastos > 0) lineas.unshift({cuenta:'129', debe:round2(totalGastos), haber:0});
+  if(totalIngresos > 0) lineas.push({cuenta:'129', debe:0, haber:round2(totalIngresos)});
+  addAsiento(today(), 'Regularización de ingresos y gastos', lineas);
+  cierreInfo = {totalGastos: round2(totalGastos), totalIngresos: round2(totalIngresos), resultado};
+  activeTab='cierre'; render();
+}
+
+function asientoDeCierre(){
+  const filas = calcularBalanceSumasYSaldos();
+  const lineas = [];
+  filas.forEach(f=>{
+    if(f.saldoDeudor > 0.004) lineas.push({cuenta:f.cuenta, debe:0, haber:round2(f.saldoDeudor)});
+    if(f.saldoAcreedor > 0.004) lineas.push({cuenta:f.cuenta, debe:round2(f.saldoAcreedor), haber:0});
+  });
+  addAsiento(today(), 'Asiento de cierre del ejercicio', lineas);
+  ejercicioCerrado = true;
+  activeTab='cierre'; render();
+}
+
+function nuevoEjercicio(){
+  if(!confirm('Esto borrará todos los asientos del ejercicio actual. ¿Continuar?')) return;
+  asientos = []; contador = 1; ejercicioCerrado = false; cierreInfo = null;
+  activeTab = 'compras'; render();
+}
+
+function round2(n){ return Math.round((n+Number.EPSILON)*100)/100; }
+
+render();
+</script>
+</body>
+</html>
