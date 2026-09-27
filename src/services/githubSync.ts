@@ -343,6 +343,97 @@ export const githubSyncService = {
     }
   },
 
+  // Save an individual HTML exercise file directly into "public/ejercicios/{fileName}" in GitHub
+  async saveHtmlExerciseToGitHub(
+    fileName: string,
+    htmlContent: string
+  ): Promise<{ success: boolean; message: string }> {
+    const config = this.getConfig();
+    const { owner, repo, branch, token } = config;
+
+    if (!owner || !repo || !token?.trim()) {
+      return {
+        success: false,
+        message: 'Para subir el archivo HTML a GitHub necesitas configurar tu Token de GitHub en el menú de Sincronización.',
+      };
+    }
+
+    try {
+      const cleanName = fileName.replace(/[^a-zA-Z0-9_.-]/g, '_');
+      const targetPath = `public/ejercicios/${cleanName}`;
+
+      const headers: Record<string, string> = {
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `Bearer ${token.trim()}`,
+        'Content-Type': 'application/json',
+      };
+
+      // Check if file exists to get SHA
+      let sha: string | undefined = undefined;
+      const getRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${targetPath}?ref=${branch}`,
+        { headers }
+      );
+      if (getRes.ok) {
+        const existingData = await getRes.json();
+        sha = existingData.sha;
+      }
+
+      // Base64 encode UTF-8
+      const utf8Bytes = new TextEncoder().encode(htmlContent);
+      let binary = '';
+      for (let i = 0; i < utf8Bytes.length; i++) {
+        binary += String.fromCharCode(utf8Bytes[i]);
+      }
+      const base64Content = btoa(binary);
+
+      const putRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${targetPath}`,
+        {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `Añadir ejercicio interactivo HTML: ${cleanName} [AulaVirtual]`,
+            content: base64Content,
+            branch,
+            ...(sha ? { sha } : {}),
+          }),
+        }
+      );
+
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        return { 
+          success: false, 
+          message: `Error al subir HTML a GitHub: ${err.message || putRes.status}` 
+        };
+      }
+
+      return {
+        success: true,
+        message: `¡Archivo "${cleanName}" guardado en GitHub en "${targetPath}"!`,
+      };
+    } catch (err: any) {
+      return { 
+        success: false, 
+        message: `Error de red al subir HTML a GitHub: ${err?.message || 'Error desconocido'}` 
+      };
+    }
+  },
+
+  // Download raw HTML file
+  downloadHtmlFile(fileName: string, htmlContent: string): void {
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName.endsWith('.html') ? fileName : `${fileName}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+
   // Download database file for manual upload to GitHub
   downloadDatabaseFile(): void {
     const payload = this.getDatabasePayload();

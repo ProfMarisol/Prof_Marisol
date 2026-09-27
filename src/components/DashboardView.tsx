@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { ModulePage, StudentSubmission, User, ViewState } from '../types';
 import { storageService } from '../services/storage';
+import { githubSyncService } from '../services/githubSync';
 import { ConfirmModal } from './ConfirmModal';
+import { GitHubSyncModal } from './GitHubSyncModal';
 import { 
   BookOpen, PlusCircle, Search, Clock, Award, 
   CheckCircle2, ArrowRight, Edit3, Trash2, Download, Upload, 
   Sparkles, Layers, GraduationCap, FileCode, Check, RotateCcw,
-  ShieldCheck, UserPlus, Users
+  ShieldCheck, UserPlus, Users, Github
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -34,6 +36,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [moduleToDelete, setModuleToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isResettingModal, setIsResettingModal] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   // Filter modules
   const filteredModules = modules.filter(m => {
@@ -147,6 +150,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <ShieldCheck className="w-4 h-4 text-slate-950" />
                   <span>Administrador: Profesores</span>
+                </button>
+                <button
+                  onClick={() => setIsSyncModalOpen(true)}
+                  className="px-4 py-2.5 bg-slate-900/90 hover:bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                  title="Sincronizar y guardar ejercicios HTML y usuarios con GitHub"
+                >
+                  <Github className="w-4 h-4 text-emerald-400" />
+                  <span>Sincronizar con GitHub</span>
                 </button>
               </>
             ) : (
@@ -474,6 +485,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {isTeacher && (
                     <div className="flex items-center gap-1">
+                      {module.htmlContent && (
+                        <button
+                          type="button"
+                          onClick={() => githubSyncService.downloadHtmlFile(module.htmlFileName || `${module.slug}.html`, module.htmlContent!)}
+                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                          title="Descargar copia del archivo HTML interactivo"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       <button
                         onClick={() => onNavigate({ type: 'module-editor', moduleId: module.id })}
                         className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
@@ -533,6 +554,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           setTimeout(() => setToastMessage(null), 3500);
         }}
         onCancel={() => setIsResettingModal(false)}
+      />
+
+      {/* GitHub Sync Modal */}
+      <GitHubSyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onDataUpdated={onRefreshData}
       />
     </div>
   );

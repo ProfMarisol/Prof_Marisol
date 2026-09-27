@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { ExerciseItem, ExerciseType, ModulePage, User, ViewState } from '../types';
 import { storageService } from '../services/storage';
+import { githubSyncService } from '../services/githubSync';
 import { ConfirmModal } from './ConfirmModal';
+import { GitHubSyncModal } from './GitHubSyncModal';
 import { HtmlExerciseViewer } from './HtmlExerciseViewer';
 import { 
   ArrowLeft, Plus, Trash2, Save, Eye, Layers, 
   HelpCircle, CheckCircle, Info, ExternalLink, Sparkles, Check,
-  Upload, Maximize2, FileCode, Paperclip, X
+  Upload, Maximize2, FileCode, Paperclip, X, Github, RefreshCw, Download
 } from 'lucide-react';
 
 interface ModuleEditorProps {
@@ -37,6 +39,8 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
   const [htmlFileName, setHtmlFileName] = useState<string>(existingModule?.htmlFileName || '');
   const [htmlFileSize, setHtmlFileSize] = useState<string>('');
   const [fullScreenPreviewActive, setFullScreenPreviewActive] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   
   const [exercises, setExercises] = useState<ExerciseItem[]>(
     existingModule?.exercises || [
@@ -139,7 +143,7 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
     setExercises(updated);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent, syncDirectlyToGitHub = false) => {
     e.preventDefault();
     setValidationError(null);
 
@@ -180,9 +184,46 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
       exercises: validExercises,
     };
 
+    setIsSaving(true);
     storageService.saveOrUpdateModule(moduleToSave);
+
+    const ghConfig = githubSyncService.getConfig();
+    const hasGitHubToken = !!ghConfig.token?.trim();
+
+    if (syncDirectlyToGitHub || hasGitHubToken) {
+      if (!hasGitHubToken) {
+        setIsSaving(false);
+        setIsSyncModalOpen(true);
+        return;
+      }
+
+      setEditorToast('Guardando y sincronizando con GitHub...');
+      try {
+        // 1. Push database with all modules and HTML contents to GitHub
+        await githubSyncService.pushToGitHub(
+          ghConfig,
+          `Guardar módulo: ${title.trim()} [AulaVirtual]`
+        );
+
+        // 2. If an HTML file was uploaded, also commit it as a standalone HTML file in public/ejercicios/
+        if (htmlContent.trim()) {
+          const cleanName = (htmlFileName.trim() || `${slug}.html`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+          await githubSyncService.saveHtmlExerciseToGitHub(cleanName, htmlContent);
+        }
+
+        setEditorToast('¡Página de ejercicios y archivo HTML guardados en GitHub con éxito!');
+      } catch (err: any) {
+        setEditorToast('Guardado localmente. Error en GitHub: ' + (err?.message || 'Revisa la conexión'));
+      }
+    } else {
+      setEditorToast('Página guardada localmente.');
+    }
+
+    setIsSaving(false);
     onSaved();
-    onNavigate({ type: 'dashboard' });
+    setTimeout(() => {
+      onNavigate({ type: 'dashboard' });
+    }, 600);
   };
 
   return (
@@ -345,7 +386,7 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setFullScreenPreviewActive(true)}
@@ -353,7 +394,17 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
                         title="Ver ejercicio a pantalla completa"
                       >
                         <Maximize2 className="w-3.5 h-3.5" />
-                        <span>Ver a Pantalla Completa</span>
+                        <span>Pantalla Completa</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => githubSyncService.downloadHtmlFile(htmlFileName || 'ejercicio.html', htmlContent)}
+                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                        title="Descargar copia del archivo HTML"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Descargar HTML</span>
                       </button>
 
                       <label className="px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors flex items-center gap-1.5">
@@ -376,6 +427,11 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[11px] text-slate-600 px-1">
+                    <Github className="w-3.5 h-3.5 text-slate-700" />
+                    <span>El contenido HTML se guardará en GitHub para que esté disponible en cualquier ordenador conectado a la plataforma.</span>
                   </div>
 
                   {/* Embedded Live Preview with Full-Screen Button */}
@@ -744,13 +800,27 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
             )}
           </div>
 
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"
-          >
-            <Save className="w-4 h-4" />
-            <span>Guardar y Publicar en la Página Principal</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={(e) => handleSave(e, true)}
+              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"
+              title="Guardar y subir tanto el módulo como el archivo HTML directamente a GitHub"
+            >
+              <Github className="w-4 h-4 text-emerald-400" />
+              <span>{isSaving ? 'Guardando en GitHub...' : 'Guardar y Subir a GitHub'}</span>
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              <span>Guardar Página</span>
+            </button>
+          </div>
         </div>
       </form>
 
@@ -772,6 +842,13 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
         isDestructive={true}
         onConfirm={handleDeleteEntireModule}
         onCancel={() => setIsDeletingModule(false)}
+      />
+
+      {/* GitHub Sync Modal */}
+      <GitHubSyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onDataUpdated={onSaved}
       />
     </div>
   );
