@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador Contable Sage 50 – PGC España (v2)</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: #fff;
+      padding: 24px 16px;
+    }
+    header h1 {
+      margin: 0 0 8px 0;
+      font-size: 1.6rem;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.2rem;
+    }
+    h3 {
+      margin: 14px 0 8px 0;
+      font-size: 1.05rem;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 800px) {
+      .row-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .row-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .row-4 {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+      }
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: var(--primary-dark);
+    }
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    button.success {
+      background: var(--success);
+    }
+    button.danger {
+      background: var(--danger);
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+    }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      margin-left: 6px;
+    }
+    .error {
+      color: var(--danger);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+    .success-text {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .section-title {
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .small {
+      font-size: 0.85rem;
+    }
+    .inline {
+      display: inline-block;
+    }
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .solucion {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #f9fafb;
+    }
+    .solucion h4 {
+      margin: 0 0 6px 0;
+      font-size: 0.95rem;
+    }
+    .toggle-solucion {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Simulador de Ejercicios Contables – Sage 50 (PGC España, v2)</h1>
+  <p>Casos tipo examen, validación de Diario y Mayor, liquidación trimestral de IVA, cierre anual y exportación a CSV.</p>
+</header>
+
+<div class="container">
+
+  <!-- Selector de ejercicio -->
+  <div class="card">
+    <h2>1. Selección del ejercicio</h2>
+    <div class="row row-2">
+      <div>
+        <label for="empresaNombre">Nombre de la empresa (simulada)</label>
+        <input id="empresaNombre" value="Empresa Demo, S.L." />
+      </div>
+      <div>
+        <label for="ejercicioAnio">Año del ejercicio</label>
+        <input id="ejercicioAnio" type="number" value="2025" />
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btnNuevoEjercicio">Nuevo ejercicio (borra datos)</button>
+      <button id="btnGuardarLocal" class="secondary">Guardar en navegador</button>
+      <button id="btnCargarLocal" class="secondary">Cargar desde navegador</button>
+    </div>
+    <p class="hint">
+      Los datos se guardan en tu navegador (localStorage). Para compartir el simulador, súbelo a un hosting (GitHub Pages, Netlify, etc.) y envía el enlace del archivo HTML.
+    </p>
+  </div>
+
+  <!-- Selector de caso práctico -->
+  <div class="card">
+    <h2>2. Casos prácticos (tipo examen)</h2>
+    <div class="row row-4">
+      <div>
+        <label for="tipoCaso">Tipo de operación</label>
+        <select id="tipoCaso">
+          <option value="compra">Factura de compra</option>
+          <option value="venta">Factura de venta</option>
+          <option value="nomina">Nómina (simplificada)</option>
+          <option value="amortizacion">Amortización</option>
+          <option value="iva_trimestral">Liquidación trimestral de IVA</option>
+          <option value="cierre_anual">Cierre contable anual</option>
+          <option value="examen_compra_venta">Examen: compras y ventas</option>
+          <option value="examen_nomina_iva">Examen: nómina + IVA</option>
+        </select>
+      </div>
+      <div>
+        <label for="nivelDificultad">Nivel</label>
+        <select id="nivelDificultad">
+          <option value="basico">Básico</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select>
+      </div>
+      <div>
+        <label for="mostrarSolucion">Mostrar solución</label>
+        <select id="mostrarSolucion">
+          <option value="no">No (oculta)</option>
+          <option value="si">Sí (visible)</option>
+        </select>
+      </div>
+      <div style="display:flex; align-items:flex-end;">
+        <button id="btnGenerarCaso" class="success">Generar caso práctico</button>
+      </div>
+    </div>
+
+    <div id="areaCaso" style="margin-top:14px;">
+      <p class="muted">Selecciona un tipo de operación y pulsa “Generar caso práctico”.</p>
+    </div>
+  </div>
+
+  <!-- Libro Diario -->
+  <div class="card">
+    <h2>3. Libro Diario</h2>
+    <p class="muted">
+      Registra los asientos del caso práctico. El simulador valida que el asiento esté cuadrado y que las cuentas existan en el PGC.
+    </p>
+
+    <div class="row row-3">
+      <div>
+        <label for="asientoFecha">Fecha del asiento</label>
+        <input id="asientoFecha" type="date" />
+      </div>
+      <div>
+        <label for="asientoConcepto">Concepto / Descripción</label>
+        <input id="asientoConcepto" placeholder="Ej: Factura de compra de mercaderías" />
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:8px;">
+        <button id="btnLimpiarAsiento" class="secondary">Limpiar asiento</button>
+      </div>
+    </div>
+
+    <div class="section-title">Líneas del asiento</div>
+    <table id="tablaAsiento">
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th>Cuenta (PGC)</th>
+          <th>Descripción línea</th>
+          <th class="right" style="width:120px;">Debe</th>
+          <th class="right" style="width:120px;">Haber</th>
+          <th style="width:40px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- filas dinámicas -->
+      </tbody>
+    </table>
+    <div class="actions">
+      <button id="btnAgregarLinea">+ Añadir línea</button>
+      <button id="btnValidarAsiento" class="success">Validar asiento</button>
+      <button id="btnGuardarAsiento" class="secondary">Guardar asiento en Diario</button>
+    </div>
+    <div id="mensajeValidacionAsiento" class="error" style="display:none;"></div>
+
+    <div class="section-title">Asientos registrados en el Diario</div>
+    <div class="actions">
+      <button id="btnExportarDiarioCSV" class="secondary">Exportar Diario a CSV</button>
+    </div>
+    <table id="tablaDiario">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Concepto</th>
+          <th class="right">Debe total</th>
+          <th class="right">Haber total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- asientos guardados -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Libro Mayor -->
+  <div class="card">
+    <h2>4. Libro Mayor</h2>
+    <p class="muted">
+      Visualiza el movimiento de cada cuenta a partir de los asientos del Diario.
+    </p>
+
+    <div class="row row-3">
+      <div>
+        <label for="mayorCuenta">Cuenta</label>
+        <select id="mayorCuenta">
+          <!-- se rellena dinámicamente -->
+        </select>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:8px;">
+        <button id="btnVerMayor">Ver Mayor de la cuenta</button>
+        <button id="btnExportarMayorCSV" class="secondary">Exportar Mayor a CSV</button>
+      </div>
+    </div>
+
+    <div id="areaMayor" style="margin-top:14px;">
+      <p class="muted">Selecciona una cuenta y pulsa “Ver Mayor de la cuenta”.</p>
+    </div>
+  </div>
+
+  <!-- Liquidación trimestral de IVA -->
+  <div class="card">
+    <h2>5. Liquidación trimestral de IVA</h2>
+    <p class="muted">
+      Calcula automáticamente la liquidación de IVA a partir de los asientos de compras y ventas registrados.
+    </p>
+
+    <div class="row row-3">
+      <div>
+        <label for="ivaTrimestre">Trimestre</label>
+        <select id="ivaTrimestre">
+          <option value="1">1º (ene–mar)</option>
+          <option value="2">2º (abr–jun)</option>
+          <option value="3">3º (jul–sep)</option>
+          <option value="4">4º (oct–dic)</option>
+        </select>
+      </div>
+      <div>
+        <label for="ivaAnio">Año</label>
+        <input id="ivaAnio" type="number" value="2025" />
+      </div>
+      <div style="display:flex; align-items:flex-end;">
+        <button id="btnCalcularIVA" class="success">Calcular liquidación</button>
+      </div>
+    </div>
+
+    <div id="areaResultadoIVA" style="margin-top:14px;">
+      <p class="muted">Pulsa “Calcular liquidación” para ver el resultado.</p>
+    </div>
+  </div>
+
+  <!-- Cierre anual -->
+  <div class="card">
+    <h2>6. Cierre contable anual</h2>
+    <p class="muted">
+      Genera automáticamente los asientos de cierre: regularización de P y G y cierre de balances.
+    </p>
+
+    <div class="row row-2">
+      <div>
+        <label for="cierreAnio">Año de cierre</label>
+        <input id="cierreAnio" type="number" value="2025" />
+      </div>
+      <div style="display:flex; align-items:flex-end;">
+        <button id="btnGenerarCierre" class="success">Generar asientos de cierre</button>
+      </div>
+    </div>
+
+    <div id="areaCierre" style="margin-top:14px;">
+      <p class="muted">Pulsa “Generar asientos de cierre” para ver los asientos propuestos.</p>
+    </div>
+  </div>
+
+  <!-- Ayuda / Referencia PGC -->
+  <div class="card">
+    <h2>7. Referencia rápida de cuentas (PGC)</h2>
+    <p class="muted">
+      Algunas cuentas habituales usadas en el simulador (no exhaustivo).
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="code">213</td><td>Maquinaria</td></tr>
+        <tr><td class="code">2813</td><td>Amortización acumulada de maquinaria</td></tr>
+        <tr><td class="code">300</td><td>Mercaderías A</td></tr>
+        <tr><td class="code">301</td><td>Mercaderías B</td></tr>
+        <tr><td class="code">400</td><td>Proveedores</td></tr>
+        <tr><td class="code">410</td><td>Acreedores por prestaciones de servicios</td></tr>
+        <tr><td class="code">430</td><td>Clientes</td></tr>
+        <tr><td class="code">433</td><td>Clientes, facturas pendientes de formalizar</td></tr>
+        <tr><td class="code">472</td><td>H.P., IVA soportado</td></tr>
+        <tr><td class="code">475</td><td>H.P., acreedora por impuestos</td></tr>
+        <tr><td class="code">4750</td><td>H.P., acreedora por IVA</td></tr>
+        <tr><td class="code">476</td><td>H.P., deudora por impuestos</td></tr>
+        <tr><td class="code">4760</td><td>H.P., deudora por IVA</td></tr>
+        <tr><td class="code">4751</td><td>H.P., acreedora por IRPF</td></tr>
+        <tr><td class="code">4761</td><td>H.P., deudora por IRPF</td></tr>
+        <tr><td class="code">4762</td><td>H.P., deudora por Seguridad Social</td></tr>
+        <tr><td class="code">477</td><td>H.P., IVA repercutido</td></tr>
+        <tr><td class="code">572</td><td>Bancos e instituciones de crédito</td></tr>
+        <tr><td class="code">600</td><td>Compras de mercaderías</td></tr>
+        <tr><td class="code">621</td><td>Arrendamientos y cánones</td></tr>
+        <tr><td class="code">622</td><td>Reparaciones y conservación</td></tr>
+        <tr><td class="code">623</td><td>Servicios de profesionales independientes</td></tr>
+        <tr><td class="code">628</td><td>Suministros</td></tr>
+        <tr><td class="code">629</td><td>Otros servicios</td></tr>
+        <tr><td class="code">640</td><td>Sueldos y salarios</td></tr>
+        <tr><td class="code">642</td><td>Seguridad Social a cargo de la empresa</td></tr>
+        <tr><td class="code">681</td><td>Amortización del inmovilizado material</td></tr>
+        <tr><td class="code">700</td><td>Ventas de mercaderías</td></tr>
+        <tr><td class="code">129</td><td>Resultado del ejercicio</td></tr>
+        <tr><td class="code">112</td><td>Reserva legal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+/* =========================
+   ESTADO GLOBAL
+   ========================= */
+
+const state = {
+  empresa: {
+    nombre: "Empresa Demo, S.L.",
+    ejercicio: 2025
+  },
+  diario: [], // array de asientos: {id, fecha, concepto, lineas:[{cuenta, descripcion, debe, haber}]}
+  casos: [],  // casos generados (opcional, para referencia)
+  siguienteIdAsiento: 1
+};
+
+/* =========================
+   PLAN DE CUENTAS (PGC ampliado)
+   ========================= */
+
+const planCuentas = [
+  { cuenta: "129", descripcion: "Resultado del ejercicio" },
+  { cuenta: "112", descripcion: "Reserva legal" },
+  { cuenta: "213", descripcion: "Maquinaria" },
+  { cuenta: "2813", descripcion: "Amortización acumulada de maquinaria" },
+  { cuenta: "300", descripcion: "Mercaderías A" },
+  { cuenta: "301", descripcion: "Mercaderías B" },
+  { cuenta: "400", descripcion: "Proveedores" },
+  { cuenta: "410", descripcion: "Acreedores por prestaciones de servicios" },
+  { cuenta: "430", descripcion: "Clientes" },
+  { cuenta: "433", descripcion: "Clientes, facturas pendientes de formalizar" },
+  { cuenta: "472", descripcion: "H.P., IVA soportado" },
+  { cuenta: "475", descripcion: "H.P., acreedora por impuestos" },
+  { cuenta: "4750", descripcion: "H.P., acreedora por IVA" },
+  { cuenta: "4751", descripcion: "H.P., acreedora por IRPF" },
+  { cuenta: "476", descripcion: "H.P., deudora por impuestos" },
+  { cuenta: "4760", descripcion: "H.P., deudora por IVA" },
+  { cuenta: "4761", descripcion: "H.P., deudora por IRPF" },
+  { cuenta: "4762", descripcion: "H.P., deudora por Seguridad Social" },
+  { cuenta: "477", descripcion: "H.P., IVA repercutido" },
+  { cuenta: "572", descripcion: "Bancos e instituciones de crédito" },
+  { cuenta: "600", descripcion: "Compras de mercaderías" },
+  { cuenta: "621", descripcion: "Arrendamientos y cánones" },
+  { cuenta: "622", descripcion: "Reparaciones y conservación" },
+  { cuenta: "623", descripcion: "Servicios de profesionales independientes" },
+  { cuenta: "628", descripcion: "Suministros" },
+  { cuenta: "629", descripcion: "Otros servicios" },
+  { cuenta: "640", descripcion: "Sueldos y salarios" },
+  { cuenta: "642", descripcion: "Seguridad Social a cargo de la empresa" },
+  { cuenta: "681", descripcion: "Amortización del inmovilizado material" },
+  { cuenta: "700", descripcion: "Ventas de mercaderías" }
+];
+
+function existeCuenta(cuenta) {
+  return planCuentas.some(pc => pc.cuenta === cuenta);
+}
+
+/* =========================
+   UTILIDADES
+   ========================= */
+
+function parseNumber(value) {
+  if (value === "" || value === null || value === undefined) return 0;
+  const normalized = String(value).replace(",", ".");
+  const num = Number(normalized);
+  return isNaN(num) ? 0 : num;
+}
+
+function formatNumber(num) {
+  return num.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function generarId() {
+  return state.siguiendeIdAsiento++;
+}
+
+/* =========================
+   INICIALIZACIÓN
+   ========================= */
+
+window.addEventListener("DOMContentLoaded", () => {
+  cargarDesdeLocal();
+  actualizarSelectCuentasMayor();
+
+  document.getElementById("btnNuevoEjercicio").addEventListener("click", nuevoEjercicio);
+  document.getElementById("btnGuardarLocal").addEventListener("click", guardarEnLocal);
+  document.getElementById("btnCargarLocal").addEventListener("click", () => {
+    cargarDesdeLocal();
+    renderDiario();
+    actualizarSelectCuentasMayor();
+  });
+
+  document.getElementById("btnGenerarCaso").addEventListener("click", generarCaso);
+
+  document.getElementById("btnAgregarLinea").addEventListener("click", agregarLineaAsiento);
+  document.getElementById("btnValidarAsiento").addEventListener("click", validarAsiento);
+  document.getElementById("btnGuardarAsiento").addEventListener("click", guardarAsientoEnDiario);
+  document.getElementById("btnLimpiarAsiento").addEventListener("click", limpiarAsiento);
+
+  document.getElementById("btnVerMayor").addEventListener("click", verMayor);
+  document.getElementById("btnExportarDiarioCSV").addEventListener("click", exportarDiarioCSV);
+  document.getElementById("btnExportarMayorCSV").addEventListener("click", exportarMayorCSV);
+
+  document.getElementById("btnCalcularIVA").addEventListener("click", calcularLiquidacionIVA);
+
+  document.getElementById("btnGenerarCierre").addEventListener("click", generarCierreAnual);
+
+  agregarLineaAsiento();
+  agregarLineaAsiento();
+
+  renderDiario();
+});
+
+/* =========================
+   GESTIÓN DEL EJERCICIO
+   ========================= */
+
+function nuevoEjercicio() {
+  if (!confirm("¿Seguro que quieres iniciar un nuevo ejercicio? Se borrarán los asientos del Diario.")) return;
+  state.diario = [];
+  state.casos = [];
+  state.siguiendeIdAsiento = 1;
+  state.empresa.nombre = document.getElementById("empresaNombre").value.trim() || "Empresa Demo, S.L.";
+  state.empresa.ejercicio = parseInt(document.getElementById("ejercicioAnio").value || new Date().getFullYear(), 10);
+  renderDiario();
+  actualizarSelectCuentasMayor();
+  document.getElementById("areaCaso").innerHTML = '<p class="muted">Nuevo ejercicio iniciado. Genera un caso práctico para comenzar.</p>';
+  document.getElementById("areaResultadoIVA").innerHTML = '<p class="muted">Pulsa “Calcular liquidación” para ver el resultado.</p>';
+  document.getElementById("areaCierre").innerHTML = '<p class="muted">Pulsa “Generar asientos de cierre” para ver los asientos propuestos.</p>';
+}
+
+function guardarEnLocal() {
+  state.empresa.nombre = document.getElementById("empresaNombre").value.trim() || "Empresa Demo, S.L.";
+  state.empresa.ejercicio = parseInt(document.getElementById("ejercicioAnio").value || new Date().getFullYear(), 10);
+  const data = {
+    empresa: state.empresa,
+    diario: state.diario,
+    siguienteIdAsiento: state.siguiendeIdAsiento
+  };
+  localStorage.setItem("simuladorContableSage50", JSON.stringify(data));
+  alert("Datos guardados en el navegador.");
+}
+
+function cargarDesdeLocal() {
+  const raw = localStorage.getItem("simuladorContableSage50");
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data.empresa) {
+      state.empresa = data.empresa;
+      document.getElementById("empresaNombre").value = state.empresa.nombre;
+      document.getElementById("ejercicioAnio").value = state.empresa.ejercicio;
+    }
+    if (Array.isArray(data.diario)) {
+      state.diario = data.diario;
+    }
+    if (data.siguiendeIdAsiento) {
+      state.siguiendeIdAsiento = data.siguiendeIdAsiento;
+    }
+  } catch (e) {
+    console.error("Error cargando datos locales", e);
+  }
+}
+
+/* =========================
+   GENERADOR DE CASOS PRÁCTICOS
+   ========================= */
+
+function generarCaso() {
+  const tipo = document.getElementById("tipoCaso").value;
+  const nivel = document.getElementById("nivelDificultad").value;
+  const mostrarSolucion = document.getElementById("mostrarSolucion").value === "si";
+
+  const area = document.getElementById("areaCaso");
+  let html = "";
+
+  const caso = {
+    id: Date.now(),
+    tipo,
+    nivel,
+    mostrarSolucion,
+    fechaGeneracion: new Date().toISOString()
+  };
+  state.casos.push(caso);
+
+  if (tipo === "compra") {
+    html = generarCasoCompra(nivel, mostrarSolucion);
+  } else if (tipo === "venta") {
+    html = generarCasoVenta(nivel, mostrarSolucion);
+  } else if (tipo === "nomina") {
+    html = generarCasoNomina(nivel, mostrarSolucion);
+  } else if (tipo === "amortizacion") {
+    html = generarCasoAmortizacion(nivel, mostrarSolucion);
+  } else if (tipo === "iva_trimestral") {
+    html = generarCasoIVATrimestral(nivel, mostrarSolucion);
+  } else if (tipo === "cierre_anual") {
+    html = generarCasoCierreAnual(nivel, mostrarSolucion);
+  } else if (tipo === "examen_compra_venta") {
+    html = generarCasoExamenCompraVenta(nivel, mostrarSolucion);
+  } else if (tipo === "examen_nomina_iva") {
+    html = generarCasoExamenNominaIVA(nivel, mostrarSolucion);
+  }
+
+  area.innerHTML = html;
+
+  const fechaInput = document.getElementById("asientoFecha");
+  if (fechaInput && !fechaInput.value) {
+    const hoy = new Date();
+    fechaInput.valueAsDate = hoy;
+  }
+}
+
+// Casos básicos (compra, venta, nómina, amortización, IVA, cierre) similares a v1
+// Se añade un bloque de solución opcional.
+
+function bloqueSolucion(titulo, pasos) {
+  const mostrar = document.getElementById("mostrarSolucion").value === "si";
+  const estilo = mostrar ? '' : 'display:none;';
+  const toggleTexto = mostrar ? 'Ocultar solución' : 'Mostrar solución';
+
+  const pasosHtml = pasos.map(p => `<li>${p}</li>`).join("");
+
+  return `
+    <div class="solucion">
+      <h4>${titulo}</h4>
+      <div id="solucionContenido" style="${estilo}">
+        <ol>${pasosHtml}</ol>
+      </div>
+      <div class="toggle-solucion" id="toggleSolucion">${toggleTexto}</div>
+    </div>
+    <script>
+      document.getElementById("toggleSolucion").addEventListener("click", () => {
+        const c = document.getElementById("solucionContenido");
+        const t = document.getElementById("toggleSolucion");
+        if (c.style.display === "none") {
+          c.style.display = "";
+          t.textContent = "Ocultar solución";
+        } else {
+          c.style.display = "none";
+          t.textContent = "Mostrar solución";
+        }
+      });
+    <\/script>
+  `;
+}
+
+function generarCasoCompra(nivel, mostrarSolucion) {
+  let base = 1000;
+  let iva = 21;
+  if (nivel === "intermedio") { base = 2500; }
+  if (nivel === "avanzado") { base = 5000; iva = 10; }
+
+  const importeBase = base;
+  const importeIVA = parseFloat((importeBase * iva / 100).toFixed(2));
+  const total = parseFloat((importeBase + importeIVA).toFixed(2));
+
+  const pasos = [
+    `Carga <span class="code">600</span> Compras de mercaderías por ${formatNumber(importeBase)} € (Debe).`,
+    `Carga <span class="code">472</span> H.P. IVA soportado por ${formatNumber(importeIVA)} € (Debe).`,
+    `Abona <span class="code">572</span> Bancos por ${formatNumber(total)} € (Haber).`,
+    `Valida que el asiento cuadre (Debe = Haber) y guárdalo en el Diario.`
+  ];
+
+  return `
+    <h3>Caso: Factura de compra de mercaderías</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-3">
+      <div>
+        <p><strong>Proveedor:</strong> Suministros Globales, S.L.</p>
+        <p><strong>Factura:</strong> F-2025-001</p>
+        <p><strong>Fecha:</strong> 15/${("0"+(Math.floor(Math.random()*12)+1)).slice(-2)}/${document.getElementById("ejercicioAnio").value}</p>
+      </div>
+      <div>
+        <p><strong>Base imponible:</strong> ${formatNumber(importeBase)} €</p>
+        <p><strong>Tipo de IVA:</strong> ${iva} %</p>
+        <p><strong>Importe de IVA:</strong> ${formatNumber(importeIVA)} €</p>
+      </div>
+      <div>
+        <p><strong>Total factura:</strong> ${formatNumber(total)} €</p>
+        <p><strong>Forma de pago:</strong> Contado (banco)</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Registrar el asiento de compra en el Libro Diario.</li>
+      <li>Utilizar cuentas del PGC: compras, IVA soportado, banco.</li>
+      <li>Comprobar que el asiento cuadra (Debe = Haber).</li>
+    </ul>
+
+    <div class="hint">
+      Pista: Cuentas habituales: <span class="code">600</span> Compras de mercaderías, <span class="code">472</span> H.P. IVA soportado, <span class="code">572</span> Bancos.
+    </div>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+function generarCasoVenta(nivel, mostrarSolucion) {
+  let base = 1500;
+  let iva = 21;
+  if (nivel === "intermedio") { base = 3000; }
+  if (nivel === "avanzado") { base = 7500; iva = 10; }
+
+  const importeBase = base;
+  const importeIVA = parseFloat((importeBase * iva / 100).toFixed(2));
+  const total = parseFloat((importeBase + importeIVA).toFixed(2));
+
+  const pasos = [
+    `Carga <span class="code">430</span> Clientes por ${formatNumber(total)} € (Debe).`,
+    `Abona <span class="code">700</span> Ventas de mercaderías por ${formatNumber(importeBase)} € (Haber).`,
+    `Abona <span class="code">477</span> H.P. IVA repercutido por ${formatNumber(importeIVA)} € (Haber).`,
+    `Valida que el asiento cuadre y guárdalo en el Diario.`
+  ];
+
+  return `
+    <h3>Caso: Factura de venta de mercaderías</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-3">
+      <div>
+        <p><strong>Cliente:</strong> Distribuciones Norte, S.L.</p>
+        <p><strong>Factura:</strong> V-2025-042</p>
+        <p><strong>Fecha:</strong> 22/${("0"+(Math.floor(Math.random()*12)+1)).slice(-2)}/${document.getElementById("ejercicioAnio").value}</p>
+      </div>
+      <div>
+        <p><strong>Base imponible:</strong> ${formatNumber(importeBase)} €</p>
+        <p><strong>Tipo de IVA:</strong> ${iva} %</p>
+        <p><strong>Importe de IVA:</strong> ${formatNumber(importeIVA)} €</p>
+      </div>
+      <div>
+        <p><strong>Total factura:</strong> ${formatNumber(total)} €</p>
+        <p><strong>Forma de pago:</strong> Crédito a 30 días (cliente)</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Registrar el asiento de venta en el Libro Diario.</li>
+      <li>Utilizar cuentas del PGC: ventas, IVA repercutido, clientes.</li>
+      <li>Comprobar que el asiento cuadra.</li>
+    </ul>
+
+    <div class="hint">
+      Pista: Cuentas habituales: <span class="code">430</span> Clientes, <span class="code">700</span> Ventas de mercaderías, <span class="code">477</span> H.P. IVA repercutido.
+    </div>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+function generarCasoNomina(nivel, mostrarSolucion) {
+  let bruto = 1800;
+  let ssEmpresaPct = 30;
+  if (nivel === "intermedio") { bruto = 2200; ssEmpresaPct = 32; }
+  if (nivel === "avanzado") { bruto = 3000; ssEmpresaPct = 33; }
+
+  const sueldoBruto = bruto;
+  const ssEmpresa = parseFloat((sueldoBruto * ssEmpresaPct / 100).toFixed(2));
+  const irpfPct = nivel === "avanzado" ? 15 : 12;
+  const irpf = parseFloat((sueldoBruto * irpfPct / 100).toFixed(2));
+  const ssTrabajadorPct = 6.35;
+  const ssTrabajador = parseFloat((sueldoBruto * ssTrabajadorPct / 100).toFixed(2));
+  const neto = parseFloat((sueldoBruto - irpf - ssTrabajador).toFixed(2));
+
+  const pasos = [
+    `Asiento de devengo:
+      <ul>
+        <li>Carga <span class="code">640</span> Sueldos y salarios por ${formatNumber(sueldoBruto)} € (Debe).</li>
+        <li>Carga <span class="code">642</span> SS a cargo de la empresa por ${formatNumber(ssEmpresa)} € (Debe).</li>
+        <li>Abona acreedores: SS trabajador, IRPF y SS empresa (según tu plan de cuentas) por sus importes respectivos (Haber).</li>
+      </ul>
+    `,
+    `Asiento de pago:
+      <ul>
+        <li>Carga las cuentas de acreedores (SS, Hacienda) por los importes correspondientes (Debe).</li>
+        <li>Abona <span class="code">572</span> Bancos por el neto + cuotas a ingresar (Haber).</li>
+      </ul>
+    `,
+    `Valida que cada asiento cuadre y guárdalos en el Diario.`
+  ];
+
+  return `
+    <h3>Caso: Registro de nómina mensual (simplificada)</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-3">
+      <div>
+        <p><strong>Trabajador:</strong> María López</p>
+        <p><strong>Mes:</strong> ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][Math.floor(Math.random()*12)]} ${document.getElementById("ejercicioAnio").value}</p>
+      </div>
+      <div>
+        <p><strong>Sueldo bruto:</strong> ${formatNumber(sueldoBruto)} €</p>
+        <p><strong>SS a cargo de la empresa:</strong> ${formatNumber(ssEmpresa)} €</p>
+        <p><strong>IRPF retenido:</strong> ${formatNumber(irpf)} €</p>
+      </div>
+      <div>
+        <p><strong>SS a cargo del trabajador:</strong> ${formatNumber(ssTrabajador)} €</p>
+        <p><strong>Neto a pagar:</strong> ${formatNumber(neto)} €</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Registrar el asiento de devengo de salarios y cargas sociales.</li>
+      <li>Registrar el asiento de pago de la nómina (banco).</li>
+      <li>Utilizar cuentas del PGC: sueldos, SS a cargo de la empresa, acreedores SS, Hacienda (IRPF), banco.</li>
+    </ul>
+
+    <div class="hint">
+      Pistas: 
+      <span class="code">640</span> Sueldos y salarios,
+      <span class="code">642</span> SS a cargo de la empresa,
+      <span class="code">4751</span> H.P. acreedora por IRPF,
+      <span class="code">4762</span> H.P. deudora por SS (o la subcuenta que uses),
+      <span class="code">572</span> Bancos.
+    </div>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+function generarCasoAmortizacion(nivel, mostrarSolucion) {
+  let valor = 12000;
+  let anos = 10;
+  if (nivel === "intermedio") { valor = 25000; anos = 8; }
+  if (nivel === "avanzado") { valor = 45000; anos = 12; }
+
+  const cuotaAnual = parseFloat((valor / anos).toFixed(2));
+  const cuotaMensual = parseFloat((cuotaAnual / 12).toFixed(2));
+
+  const pasos = [
+    `Cuenta de gasto de amortización (por ejemplo <span class="code">681</span>) por la cuota mensual: ${formatNumber(cuotaMensual)} € (Debe).`,
+    `Abona <span class="code">2813</span> Amortización acumulada de maquinaria por ${formatNumber(cuotaMensual)} € (Haber).`,
+    `Valida que el asiento cuadre y guárdalo en el Diario.`
+  ];
+
+  return `
+    <h3>Caso: Amortización de maquinaria (línea recta)</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-3">
+      <div>
+        <p><strong>Elemento:</strong> Maquinaria industrial</p>
+        <p><strong>Valor de adquisición:</strong> ${formatNumber(valor)} €</p>
+        <p><strong>Vida útil:</strong> ${anos} años</p>
+      </div>
+      <div>
+        <p><strong>Cuota anual:</strong> ${formatNumber(cuotaAnual)} €</p>
+        <p><strong>Cuota mensual:</strong> ${formatNumber(cuotaMensual)} €</p>
+        <p><strong>Método:</strong> Línea recta</p>
+      </div>
+      <div>
+        <p><strong>Mes a registrar:</strong> ${["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][Math.floor(Math.random()*12)]} ${document.getElementById("ejercicioAnio").value}</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Registrar el asiento de amortización del mes.</li>
+      <li>Utilizar cuentas del PGC: gasto por amortización y amortización acumulada.</li>
+    </ul>
+
+    <div class="hint">
+      Pista: 
+      <span class="code">681</span> Amortización del inmovilizado material,
+      <span class="code">2813</span> Amortización acumulada de maquinaria.
+    </div>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+function generarCasoIVATrimestral(nivel, mostrarSolucion) {
+  const pasos = [
+    `Registra varias facturas de compra y venta durante el trimestre, usando <span class="code">472</span> (IVA soportado) y <span class="code">477</span> (IVA repercutido).`,
+    `Ve a la sección “Liquidación trimestral de IVA”, selecciona el trimestre y año correctos.`,
+    `Pulsa “Calcular liquidación” y revisa el resultado (IVA a ingresar o a compensar).`,
+    `Si lo deseas, registra el asiento de liquidación propuesto en el Diario.`
+  ];
+
+  return `
+    <h3>Caso: Liquidación trimestral de IVA</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <p>
+      En este caso, el simulador calculará automáticamente la liquidación de IVA del trimestre seleccionado
+      a partir de los asientos de compras y ventas registrados en el Libro Diario.
+    </p>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Registra varias facturas de compra y venta durante el trimestre.</li>
+      <li>Utiliza las cuentas <span class="code">472</span> (IVA soportado) y <span class="code">477</span> (IVA repercutido).</li>
+      <li>Calcula la liquidación trimestral con el botón “Calcular liquidación”.</li>
+    </ul>
+
+    <div class="hint">
+      El resultado indicará si hay IVA a ingresar (4750) o a compensar (4760), y el importe correspondiente.
+    </div>
+
+    ${bloqueSolucion("Guía de resolución", pasos)}
+  `;
+}
+
+function generarCasoCierreAnual(nivel, mostrarSolucion) {
+  const pasos = [
+    `Registra durante el año asientos de compras, ventas, gastos e ingresos usando cuentas de P y G (6xx y 7xx).`,
+    `Ve a la sección “Cierre contable anual”, selecciona el año de cierre.`,
+    `Pulsa “Generar asientos de cierre” y revisa el asiento de regularización de P y G propuesto.`,
+    `Adapta el asiento de cierre de balances a tu plan de cuentas en Sage 50 (reservas, cuentas de cierre, etc.).`
+  ];
+
+  return `
+    <h3>Caso: Cierre contable anual</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <p>
+      El simulador generará automáticamente los asientos de cierre:
+    </p>
+    <ul>
+      <li>Regularización de cuentas de gestión (P y G) para determinar el resultado del ejercicio.</li>
+      <li>Cierre de las cuentas de balance (activo, pasivo y neto) llevando el resultado a <span class="code">129</span> y reservas si procede.</li>
+    </ul>
+
+    <div class="section-title">Se pide</div>
+    <ul>
+      <li>Revisar los asientos propuestos por el simulador.</li>
+      <li>Comprobar que todas las cuentas de P y G quedan a cero tras la regularización.</li>
+      <li>Comprobar que el balance queda cerrado según el método que uses en Sage 50.</li>
+    </ul>
+
+    <div class="hint">
+      Este ejercicio es más avanzado; úsalo cuando tengas varios asientos de compras, ventas, gastos e ingresos registrados.
+    </div>
+
+    ${bloqueSolucion("Guía de resolución", pasos)}
+  `;
+}
+
+// Casos tipo examen
+
+function generarCasoExamenCompraVenta(nivel, mostrarSolucion) {
+  // Caso con 2 operaciones: 1 compra, 1 venta
+  let baseCompra = nivel === "avanzado" ? 4000 : 2000;
+  let ivaCompra = nivel === "avanzado" ? 10 : 21;
+  let baseVenta = nivel === "avanzado" ? 6000 : 3000;
+  let ivaVenta = nivel === "avanzado" ? 10 : 21;
+
+  const ivc = parseFloat((baseCompra * ivaCompra / 100).toFixed(2));
+  const totalCompra = parseFloat((baseCompra + ivc).toFixed(2));
+  const ivv = parseFloat((baseVenta * ivaVenta / 100).toFixed(2));
+  const totalVenta = parseFloat((baseVenta + ivv).toFixed(2));
+
+  const pasos = [
+    `Registra la factura de compra:
+      <ul>
+        <li><span class="code">600</span> por ${formatNumber(baseCompra)} € (Debe).</li>
+        <li><span class="code">472</span> por ${formatNumber(ivc)} € (Debe).</li>
+        <li><span class="code">572</span> por ${formatNumber(totalCompra)} € (Haber).</li>
+      </ul>
+    `,
+    `Registra la factura de venta:
+      <ul>
+        <li><span class="code">430</span> por ${formatNumber(totalVenta)} € (Debe).</li>
+        <li><span class="code">700</span> por ${formatNumber(baseVenta)} € (Haber).</li>
+        <li><span class="code">477</span> por ${formatNumber(ivv)} € (Haber).</li>
+      </ul>
+    `,
+    `Calcula la liquidación de IVA del trimestre correspondiente y comprueba el resultado.`,
+    `Opcional: plantea el asiento de regularización de P y G si es cierre de ejercicio.`
+  ];
+
+  const anio = document.getElementById("ejercicioAnio").value;
+
+  return `
+    <h3>Examen tipo test/práctico: Compras y ventas</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-2">
+      <div>
+        <h4>Operación 1 – Compra</h4>
+        <p><strong>Proveedor:</strong> Mayorista Central, S.L.</p>
+        <p><strong>Factura:</strong> F-2025-120</p>
+        <p><strong>Fecha:</strong> 10/03/${anio}</p>
+        <p><strong>Base imponible:</strong> ${formatNumber(baseCompra)} €</p>
+        <p><strong>IVA:</strong> ${ivaCompra} % → ${formatNumber(ivc)} €</p>
+        <p><strong>Total:</strong> ${formatNumber(totalCompra)} € (pago por banco)</p>
+      </div>
+      <div>
+        <h4>Operación 2 – Venta</h4>
+        <p><strong>Cliente:</strong> Comercio Sur, S.L.</p>
+        <p><strong>Factura:</strong> V-2025-085</p>
+        <p><strong>Fecha:</strong> 18/03/${anio}</p>
+        <p><strong>Base imponible:</strong> ${formatNumber(baseVenta)} €</p>
+        <p><strong>IVA:</strong> ${ivaVenta} % → ${formatNumber(ivv)} €</p>
+        <p><strong>Total:</strong> ${formatNumber(totalVenta)} € (crédito a 30 días)</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ol>
+      <li>Registrar en el Libro Diario los asientos de compra y venta.</li>
+      <li>Calcular la liquidación de IVA del 1º trimestre de ${anio}.</li>
+      <li>Indicar si hay IVA a ingresar o a compensar y el importe.</li>
+    </ol>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+function generarCasoExamenNominaIVA(nivel, mostrarSolucion) {
+  let bruto = nivel === "avanzado" ? 2800 : 1900;
+  let ssEmpresaPct = nivel === "avanzado" ? 33 : 30;
+  const irpfPct = nivel === "avanzado" ? 15 : 12;
+
+  const sueldoBruto = bruto;
+  const ssEmpresa = parseFloat((sueldoBruto * ssEmpresaPct / 100).toFixed(2));
+  const irpf = parseFloat((sueldoBruto * irpfPct / 100).toFixed(2));
+  const ssTrabajador = parseFloat((sueldoBruto * 6.35 / 100).toFixed(2));
+  const neto = parseFloat((sueldoBruto - irpf - ssTrabajador).toFixed(2));
+
+  let baseVenta = nivel === "avanzado" ? 5000 : 2500;
+  let ivaVenta = 21;
+  const ivv = parseFloat((baseVenta * ivaVenta / 100).toFixed(2));
+  const totalVenta = parseFloat((baseVenta + ivv).toFixed(2));
+
+  const anio = document.getElementById("ejercicioAnio").value;
+
+  const pasos = [
+    `Registra la nómina:
+      <ul>
+        <li>Devengo: <span class="code">640</span> por ${formatNumber(sueldoBruto)} € y <span class="code">642</span> por ${formatNumber(ssEmpresa)} € (Debe). Abona acreedores (SS, IRPF) por sus importes (Haber).</li>
+        <li>Pago: carga acreedores y abona <span class="code">572</span> por el total a pagar (Haber).</li>
+      </ul>
+    `,
+    `Registra la factura de venta:
+      <ul>
+        <li><span class="code">430</span> por ${formatNumber(totalVenta)} € (Debe).</li>
+        <li><span class="code">700</span> por ${formatNumber(baseVenta)} € (Haber).</li>
+        <li><span class="code">477</span> por ${formatNumber(ivv)} € (Haber).</li>
+      </ul>
+    `,
+    `Calcula la liquidación de IVA del trimestre correspondiente.`
+  ];
+
+  return `
+    <h3>Examen tipo práctico: Nómina + IVA</h3>
+    <p class="muted">Nivel: <strong>${nivel}</strong></p>
+    <div class="row row-2">
+      <div>
+        <h4>Operación 1 – Nómina</h4>
+        <p><strong>Trabajador:</strong> Juan Pérez</p>
+        <p><strong>Mes:</strong> Marzo ${anio}</p>
+        <p><strong>Sueldo bruto:</strong> ${formatNumber(sueldoBruto)} €</p>
+        <p><strong>SS empresa:</strong> ${formatNumber(ssEmpresa)} €</p>
+        <p><strong>IRPF:</strong> ${formatNumber(irpf)} €</p>
+        <p><strong>SS trabajador:</strong> ${formatNumber(ssTrabajador)} €</p>
+        <p><strong>Neto:</strong> ${formatNumber(neto)} €</p>
+      </div>
+      <div>
+        <h4>Operación 2 – Venta</h4>
+        <p><strong>Cliente:</strong> Tiendas del Norte, S.L.</p>
+        <p><strong>Factura:</strong> V-2025-033</p>
+        <p><strong>Fecha:</strong> 20/03/${anio}</p>
+        <p><strong>Base imponible:</strong> ${formatNumber(baseVenta)} €</p>
+        <p><strong>IVA:</strong> ${ivaVenta} % → ${formatNumber(ivv)} €</p>
+        <p><strong>Total:</strong> ${formatNumber(totalVenta)} € (crédito a 30 días)</p>
+      </div>
+    </div>
+
+    <div class="section-title">Se pide</div>
+    <ol>
+      <li>Registrar los asientos de nómina (devengo y pago).</li>
+      <li>Registrar el asiento de venta.</li>
+      <li>Calcular la liquidación de IVA del 1º trimestre de ${anio}.</li>
+    </ol>
+
+    ${bloqueSolucion("Solución propuesta", pasos)}
+  `;
+}
+
+/* =========================
+   LIBRO DIARIO – GESTIÓN DE ASIENTOS
+   ========================= */
+
+function agregarLineaAsiento() {
+  const tbody = document.querySelector("#tablaAsiento tbody");
+  const tr = document.createElement("tr");
+  const index = tbody.querySelectorAll("tr").length + 1;
+
+  tr.innerHTML = `
+    <td class="center">${index}</td>
+    <td>
+      <input type="text" class="inputCuenta" placeholder="Ej: 600" />
+    </td>
+    <td>
+      <input type="text" class="inputDescLinea" placeholder="Descripción de la línea" />
+    </td>
+    <td>
+      <input type="text" class="inputDebe right" placeholder="0,00" />
+    </td>
+    <td>
+      <input type="text" class="inputHaber right" placeholder="0,00" />
+    </td>
+    <td class="center">
+      <button class="danger btnEliminarLinea">×
+</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+
+  tr.querySelector(".btnEliminarLinea").addEventListener("click", () => {
+    if (tbody.querySelectorAll("tr").length <= 2) {
+      alert("El asiento debe tener al menos 2 líneas con importes.");
+      return;
+    }
+    tr.remove();
+    renumerarLineas();
+  });
+
+  renumerarLineas();
+}
+
+function renumerarLineas() {
+  const tbody = document.querySelector("#tablaAsiento tbody");
+  tbody.querySelectorAll("tr").forEach((tr, i) => {
+    tr.cells[0].textContent = i + 1;
+  });
+}
+
+function obtenerLineasAsientoDesdeForm() {
+  const lineas = [];
+  document.querySelectorAll("#tablaAsiento tbody tr").forEach(tr => {
+    const cuenta = tr.querySelector(".inputCuenta").value.trim();
+    const desc = tr.querySelector(".inputDescLinea").value.trim();
+    const debe = parseNumber(tr.querySelector(".inputDebe").value);
+    const haber = parseNumber(tr.querySelector(".inputHaber").value);
+
+    if (cuenta === "" && debe === 0 && haber === 0) {
+      return;
+    }
+
+    lineas.push({
+      cuenta,
+      descripcion: desc,
+      debe,
+      haber
+    });
+  });
+  return lineas;
+}
+
+function validarAsiento() {
+  const mensajeEl = document.getElementById("mensajeValidacionAsiento");
+  mensajeEl.style.display = "none";
+  mensajeEl.textContent = "";
+
+  const lineas = obtenerLineasAsientoDesdeForm();
+
+  if (lineas.length < 2) {
+    mensajeEl.textContent = "El asiento debe tener al menos 2 líneas con importes.";
+    mensajeEl.style.display = "block";
+    return false;
+  }
+
+  for (const l of lineas) {
+    if (l.cuenta && !existeCuenta(l.cuenta)) {
+      mensajeEl.textContent = `La cuenta ${l.cuenta} no existe en el plan de cuentas del simulador.`;
+      mensajeEl.style.display = "block";
+      return false;
+    }
+  }
+
+  const totalDebe = lineas.reduce((sum, l) => sum + l.debe, 0);
+  const totalHaber = lineas.reduce((sum, l) => sum + l.haber, 0);
+
+  const diff = Math.abs(totalDebe - totalHaber);
+  if (diff > 0.009) {
+    mensajeEl.textContent = `El asiento no cuadra: Debe = ${formatNumber(totalDebe)} €, Haber = ${formatNumber(totalHaber)} €, diferencia = ${formatNumber(diff)} €.`;
+    mensajeEl.style.display = "block";
+    return false;
+  }
+
+  mensajeEl.classList.add("success-text");
+  mensajeEl.textContent = "Asiento cuadrado y cuentas válidas.";
+  mensajeEl.style.display = "block";
+  setTimeout(() => {
+    mensajeEl.classList.remove("success-text");
+  }, 2000);
+
+  return true;
+}
+
+function guardarAsientoEnDiario() {
+  if (!validarAsiento()) return;
+
+  const fecha = document.getElementById("asientoFecha").value;
+  const concepto = document.getElementById("asientoConcepto").value.trim();
+
+  if (!fecha) {
+    alert("Indica una fecha para el asiento.");
+    return;
+  }
+
+  const lineas = obtenerLineasAsientoDesdeForm().filter(l => l.debe > 0 || l.haber > 0);
+
+  const asiento = {
+    id: generarId(),
+    fecha,
+    concepto: concepto || "Asiento sin concepto",
+    lineas
+  };
+
+  state.diario.push(asiento);
+  renderDiario();
+  actualizarSelectCuentasMayor();
+
+  document.getElementById("asientoConcepto").value = "";
+}
+
+function limpiarAsiento() {
+  if (!confirm("¿Limpiar el formulario de asiento? Se borrarán las líneas actuales.")) return;
+  const tbody = document.querySelector("#tablaAsiento tbody");
+  tbody.innerHTML = "";
+  agregarLineaAsiento();
+  agregarLineaAsiento();
+  document.getElementById("asientoFecha").value = "";
+  document.getElementById("asientoConcepto").value = "";
+  document.getElementById("mensajeValidacionAsiento").style.display = "none";
+}
+
+function renderDiario() {
+  const tbody = document.querySelector("#tablaDiario tbody");
+  tbody.innerHTML = "";
+
+  state.diario.forEach(asiento => {
+    const tr = document.createElement("tr");
+    const totalDebe = asiento.lineas.reduce((s, l) => s + l.debe, 0);
+    const totalHaber = asiento.lineas.reduce((s, l) => s + l.haber, 0);
+
+    tr.innerHTML = `
+      <td>${asiento.fecha}</td>
+      <td>${asiento.concepto}</td>
+      <td class="right">${formatNumber(totalDebe)}</td>
+      <td class="right">${formatNumber(totalHaber)}</td>
+      <td>
+        <button class="secondary btnVerAsiento" data-id="${asiento.id}">Ver</button>
+        <button class="danger btnBorrarAsiento" data-id="${asiento.id}">Borrar</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll(".btnBorrarAsiento").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-id"), 10);
+      if (!confirm(`¿Borrar asiento ${id}?`)) return;
+      state.diario = state.diario.filter(a => a.id !== id);
+      renderDiario();
+      actualizarSelectCuentasMayor();
+    });
+  });
+
+  tbody.querySelectorAll(".btnVerAsiento").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-id"), 10);
+      const asiento = state.diario.find(a => a.id === id);
+      if (!asiento) return;
+      mostrarAsientoEnForm(asiento);
+    });
+  });
+}
+
+function mostrarAsientoEnForm(asiento) {
+  document.getElementById("asientoFecha").value = asiento.fecha;
+  document.getElementById("asientoConcepto").value = asiento.concepto;
+
+  const tbody = document.querySelector("#tablaAsiento tbody");
+  tbody.innerHTML = "";
+
+  asiento.lineas.forEach(l => {
+    agregarLineaAsiento();
+  });
+
+  const rows = tbody.querySelectorAll("tr");
+  rows.forEach((tr, i) => {
+    const l = asiento.lineas[i];
+    tr.querySelector(".inputCuenta").value = l.cuenta || "";
+    tr.querySelector(".inputDescLinea").value = l.descripcion || "";
+    tr.querySelector(".inputDebe").value = l.debe > 0 ? l.debe.toFixed(2).replace(".", ",") : "";
+    tr.querySelector(".inputHaber").value = l.haber > 0 ? l.haber.toFixed(2).replace(".", ",") : "";
+  });
+
+  document.getElementById("mensajeValidacionAsiento").style.display = "none";
+}
+
+/* =========================
+   EXPORTAR A CSV
+   ========================= */
+
+function descargarCSV(nombre, contenido) {
+  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportarDiarioCSV() {
+  if (state.diario.length === 0) {
+    alert("No hay asientos en el Diario para exportar.");
+    return;
+  }
+
+  const lines = ["Fecha;Concepto;Cuenta;Descripcion;Debe;Haber"];
+  state.diario.forEach(asiento => {
+    asiento.lineas.forEach(l => {
+      const fila = [
+        asiento.fecha,
+        asiento.concepto.replace(/;/g, " "),
+        l.cuenta,
+        (l.descripcion || "").replace(/;/g, " "),
+        l.debe.toFixed(2).replace(".", ","),
+        l.haber.toFixed(2).replace(".", ",")
+      ].join(";");
+      lines.push(fila);
+    });
+  });
+
+  const contenido = lines.join("\n");
+  const nombre = `diario_${state.empresa.ejercicio}.csv`;
+  descargarCSV(nombre, contenido);
+}
+
+let ultimoMayorCSV = {
+  cuenta: "",
+  filas: []
+};
+
+function exportarMayorCSV() {
+  if (ultimoMayorCSV.filas.length === 0) {
+    alert("No hay datos de Mayor para exportar. Primero visualiza el Mayor de una cuenta.");
+    return;
+  }
+
+  const lines = ["Fecha;Concepto;Descripcion;Debe;Haber;Saldo"];
+  ultimoMayorCSV.filas.forEach(f => {
+    const fila = [
+      f.fecha,
+      f.concepto.replace(/;/g, " "),
+      (f.descripcion || "").replace(/;/g, " "),
+      (f.debe > 0 ? f.debe.toFixed(2) : "").replace(".", ","),
+      (f.haber > 0 ? f.haber.toFixed(2) : "").replace(".", ","),
+      f.saldo.toFixed(2).replace(".", ",")
+    ].join(";");
+    lines.push(fila);
+  });
+
+  const contenido = lines.join("\n");
+  const nombre = `mayor_${ultimoMayorCSV.cuenta}_${state.empresa.ejercicio}.csv`;
+  descargarCSV(nombre, contenido);
+}
+
+/* =========================
+   LIBRO MAYOR
+   ========================= */
+
+function actualizarSelectCuentasMayor() {
+  const select = document.getElementById("mayorCuenta");
+  const selected = select.value;
+  select.innerHTML = "";
+
+  planCuentas.forEach(pc => {
+    const opt = document.createElement("option");
+    opt.value = pc.cuenta;
+    opt.textContent = `${pc.cuenta} – ${pc.descripcion}`;
+    select.appendChild(opt);
+  });
+
+  if (selected && existeCuenta(selected)) {
+    select.value = selected;
+  }
+}
+
+function verMayor() {
+  const cuenta = document.getElementById("mayorCuenta").value;
+  const area = document.getElementById("areaMayor");
+
+  const movimientos = [];
+
+  state.diario.forEach(asiento => {
+    asiento.lineas.forEach(l => {
+      if (l.cuenta !== cuenta) return;
+      if (l.debe > 0) {
+        movimientos.push({
+          fecha: asiento.fecha,
+          concepto: asiento.concepto,
+          debe: l.debe,
+          haber: 0,
+          descripcion: l.descripcion
+        });
+      }
+      if (l.haber > 0) {
+        movimientos.push({
+          fecha: asiento.fecha,
+          concepto: asiento.concepto,
+          debe: 0,
+          haber: l.haber,
+          descripcion: l.descripcion
+        });
+      }
+    });
+  });
+
+  if (movimientos.length === 0) {
+    area.innerHTML = `<p class="muted">No hay movimientos para la cuenta ${cuenta} en el Diario.</p>`;
+    ultimoMayorCSV = { cuenta, filas: [] };
+    return;
+  }
+
+  let saldo = 0;
+  const filas = [];
+
+  let html = `
+    <h3>Mayor de la cuenta ${cuenta}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Concepto</th>
+          <th>Descripción línea</th>
+          <th class="right">Debe</th>
+          <th class="right">Haber</th>
+          <th class="right">Saldo</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  movimientos
+    .sort((a,b) => a.fecha.localeCompare(b.fecha))
+    .forEach(m => {
+      if (m.debe > 0) saldo += m.debe;
+      if (m.haber > 0) saldo -= m.haber;
+
+      filas.push({
+        fecha: m.fecha,
+        concepto: m.concepto,
+        descripcion: m.descripcion,
+        debe: m.debe,
+        haber: m.haber,
+        saldo
+      });
+
+      html += `
+        <tr>
+          <td>${m.fecha}</td>
+          <td>${m.concepto}</td>
+          <td>${m.descripcion || ""}</td>
+          <td class="right">${m.debe > 0 ? formatNumber(m.debe) : ""}</td>
+          <td class="right">${m.haber > 0 ? formatNumber(m.haber) : ""}</td>
+          <td class="right">${formatNumber(saldo)}</td>
+        </tr>
+      `;
+    });
+
+  html += `
+      </tbody>
+    </table>
+    <p class="small muted">Saldo final de la cuenta ${cuenta}: <strong>${formatNumber(saldo)} €</strong></p>
+  `;
+
+  area.innerHTML = html;
+  ultimoMayorCSV = { cuenta, filas };
+}
+
+/* =========================
+   LIQUIDACIÓN TRIMESTRAL DE IVA
+   ========================= */
+
+function calcularLiquidacionIVA() {
+  const trimestre = parseInt(document.getElementById("ivaTrimestre").value, 10);
+  const anio = parseInt(document.getElementById("ivaAnio").value || new Date().getFullYear(), 10);
+
+  const area = document.getElementById("areaResultadoIVA");
+
+  const mesInicio = (trimestre - 1) * 3 + 1;
+  const mesFin = mesInicio + 2;
+
+  const fechaInicio = `${anio}-${String(mesInicio).padStart(2,"0")}-01`;
+  const ultimoDia = new Date(anio, mesFin, 0).getDate();
+  const fechaFin = `${anio}-${String(mesFin).padStart(2,"0")}-${String(ultimoDia).padStart(2,"0")}`;
+
+  let ivpSoportado = 0;
+  let ivpRepercutido = 0;
+
+  state.diario.forEach(asiento => {
+    if (asiento.fecha < fechaInicio || asiento.fecha > fechaFin) return;
+
+    asiento.lineas.forEach(l => {
+      if (l.cuenta === "472") {
+        ivpSoportado += l.debe;
+      }
+      if (l.cuenta === "477") {
+        ivpRepercutido += l.haber;
+      }
+    });
+  });
+
+  const diferencia = ivpRepercutido - ivpSoportado;
+  let resultadoTexto = "";
+  let cuentaResultado = "";
+
+  if (Math.abs(diferencia) < 0.01) {
+    resultadoTexto = "No hay ni IVA a ingresar ni a compensar (cuota cero).";
+    cuentaResultado = "";
+  } else if (diferencia > 0) {
+    resultadoTexto = `IVA a ingresar: ${formatNumber(diferencia)} € (Hacienda Pública, acreedora por IVA).`;
+    cuentaResultado = "4750";
+  } else {
+    resultadoTexto = `IVA a compensar: ${formatNumber(Math.abs(diferencia))} € (Hacienda Pública, deudora por IVA).`;
+    cuentaResultado = "4760";
+  }
+
+  const asientoPropuesto = diferencia !== 0 ? `
+    <div class="section-title">Asiento de liquidación propuesto</div>
+    <p class="small">
+      Para registrar esta liquidación, podrías hacer un asiento con:
+    </p>
+    <ul class="small">
+      ${diferencia > 0 ? `
+        <li>Carga <span class="code">477</span> (IVA repercutido) por ${formatNumber(ivpRepercutido)} €.</li>
+        <li>Abona <span class="code">472</span> (IVA soportado) por ${formatNumber(ivpSoportado)} €.</li>
+        <li>Abona <span class="code">${cuentaResultado}</span> por ${formatNumber(diferencia)} €.</li>
+      ` : `
+        <li>Carga <span class="code">477</span> (IVA repercutido) por ${formatNumber(ivpRepercutido)} €.</li>
+        <li>Abona <span class="code">472</span> (IVA soportado) por ${formatNumber(ivpSoportado)} €.</li>
+        <li>Carga <span class="code">${cuentaResultado}</span> por ${formatNumber(Math.abs(diferencia))} €.</li>
+      `}
+    </ul>
+    <p class="hint small">
+      Adapta las cuentas exactas a tu plan de cuentas en Sage 50 (subcuentas de 472, 477, 4750, 4760, etc.).
+    </p>
+  ` : "";
+
+  area.innerHTML = `
+    <h3>Liquidación de IVA – ${trimestre}º trimestre de ${anio}</h3>
+    <div class="row row-3">
+      <div>
+        <p><strong>Periodo:</strong> del ${fechaInicio} al ${fechaFin}</p>
+      </div>
+      <div>
+        <p><strong>IVA soportado (472):</strong> ${formatNumber(ivpSoportado)} €</p>
+      </div>
+      <div>
+        <p><strong>IVA repercutido (477):</strong> ${formatNumber(ivpRepercutido)} €</p>
+      </div>
+    </div>
+
+    <div class="section-title">Resultado</div>
+    <p>${resultadoTexto}</p>
+
+    ${asientoPropuesto}
+  `;
+}
+
+/* =========================
+   CIERRE CONTABLE ANUAL
+   ========================= */
+
+function generarCierreAnual() {
+  const anio = parseInt(document.getElementById("cierreAnio").value || new Date().getFullYear(), 10);
+  const area = document.getElementById("areaCierre");
+
+  const asientosPYG = [];
+  const cuentasPYG = {};
+
+  state.diario.forEach(asiento => {
+    asiento.lineas.forEach(l => {
+      if (!l.cuenta) return;
+      const grupo = l.cuenta.charAt(0);
+      if (grupo === "6" || grupo === "7") {
+        if (!cuentasPYG[l.cuenta]) {
+          cuentasPYG[l.cuenta] = { cuenta: l.cuenta, debe: 0, haber: 0, descripcion: "" };
+        }
+        cuentasPYG[l.cuenta].debe += l.debe;
+        cuentasPYG[l.cuenta].haber += l.haber;
+      }
+    });
+  });
+
+  const cuentasConSaldo = [];
+  Object.values(cuentasPYG).forEach(c => {
+    const saldo = c.debe - c.haber;
+    if (Math.abs(saldo) > 0.009) {
+      cuentasConSaldo.push({
+        cuenta: c.cuenta,
+        saldo
+      });
+    }
+  });
+
+  if (cuentasConSaldo.length === 0) {
+    area.innerHTML = `<p class="muted">No se han detectado cuentas de P y G (6xx, 7xx) con saldo para cerrar.</p>`;
+    return;
+  }
+
+  let cargo129 = 0;
+  let abono129 = 0;
+
+  const lineasRegularizacion = [];
+
+  cuentasConSaldo.forEach(c => {
+    if (c.saldo > 0) {
+      lineasRegularizacion.push({
+        cuenta: c.cuenta,
+        descripcion: `Cierre P y G – abono cuenta ${c.cuenta}`,
+        debe: 0,
+        haber: parseFloat(c.saldo.toFixed(2))
+      });
+      cargo129 += c.saldo;
+    } else {
+      const importe = Math.abs(c.saldo);
+      lineasRegularizacion.push({
+        cuenta: c.cuenta,
+        descripcion: `Cierre P y G – cargo cuenta ${c.cuenta}`,
+        debe: parseFloat(importe.toFixed(2)),
+        haber: 0
+      });
+      abono129 += importe;
+    }
+  });
+
+  const resultadoEjercicio = abono129 - cargo129;
+
+  if (Math.abs(resultadoEjercicio) > 0.009) {
+    if (resultadoEjercicio > 0) {
+      lineasRegularizacion.push({
+        cuenta: "129",
+        descripcion: "Resultado del ejercicio (beneficio)",
+        debe: parseFloat(resultadoEjercicio.toFixed(2)),
+        haber: 0
+      });
+    } else {
+      const importe = Math.abs(resultadoEjercicio);
+      lineasRegularizacion.push({
+        cuenta: "129",
+        descripcion: "Resultado del ejercicio (pérdida)",
+        debe: 0,
+        haber: parseFloat(importe.toFixed(2))
+      });
+    }
+  }
+
+  const asientoRegularizacion = {
+    fecha: `${anio}-12-31`,
+    concepto: `Regularización de P y G – cierre ${anio}`,
+    lineas: lineasRegularizacion
+  };
+
+  area.innerHTML = `
+    <h3>Propuesta de asientos de cierre – ${anio}</h3>
+
+    <div class="section-title">1. Regularización de P y G</div>
+    <p class="small">
+      Este asiento lleva todas las cuentas de gestión (6xx y 7xx) a la cuenta <span class="code">129</span> “Resultado del ejercicio”.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Descripción línea</th>
+          <th class="right">Debe</th>
+          <th class="right">Haber</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${asientoRegularizacion.lineas.map(l => `
+          <tr>
+            <td class="code">${l.cuenta}</td>
+            <td>${l.descripcion}</td>
+            <td class="right">${l.debe > 0 ? formatNumber(l.debe) : ""}</td>
+            <td class="right">${l.haber > 0 ? formatNumber(l.haber) : ""}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+
+    <p class="small">
+      Resultado del ejercicio calculado: <strong>${resultadoEjercicio >= 0 ? "Beneficio" : "Pérdida"} de ${formatNumber(Math.abs(resultadoEjercicio))} €</strong>.
+    </p>
+
+    <div class="section-title">2. Cierre de balances (idea general)</div>
+    <p class="small">
+      En un cierre completo, después de tener el resultado en <span class="code">129</span>, se suelen realizar asientos para:
+    </p>
+    <ul class="small">
+      <li>Llevar el resultado a reservas o a cuenta de pyg de ejercicios anteriores (por ejemplo, <span class="code">112</span> Reserva legal, <span class="code">113</span> Reservas voluntarias, etc.).</li>
+      <li>Cerrar las cuentas de balance (activo, pasivo y neto) contra una cuenta de cierre o dejando solo las cuentas de orden, según el método que uses en Sage 50.</li>
+    </ul>
+    <p class="hint small">
+      Adapta estos asientos a tu plan de cuentas y a la configuración de cierre en Sage 50 (cuentas de cierre, subcuentas de 129, etc.).
+    </p>
+
+    <div class="actions">
+      <button id="btnGuardarRegularizacion" class="success">Guardar asiento de regularización en el Diario</button>
+    </div>
+  `;
+
+  document.getElementById("btnGuardarRegularizacion").addEventListener("click", () => {
+    const asiento = {
+      id: generarId(),
+      fecha: asientoRegularizacion.fecha,
+      concepto: asientoRegularizacion.concepto,
+      lineas: asientoRegularizacion.lineas.filter(l => l.debe > 0 || l.haber > 0)
+    };
+    state.diario.push(asiento);
+    renderDiario();
+    actualizarSelectCuentasMayor();
+    alert("Asiento de regularización de P y G guardado en el Diario.");
+  });
+}
+</script>
+
+</body>
+</html>
+
