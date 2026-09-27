@@ -3,7 +3,7 @@ import { User } from '../types';
 import { storageService } from '../services/storage';
 import { 
   GraduationCap, ShieldCheck, KeyRound, User as UserIcon, 
-  ArrowRight, Eye, EyeOff, AlertCircle, Key
+  ArrowRight, Eye, EyeOff, AlertCircle
 } from 'lucide-react';
 
 interface LoginViewProps {
@@ -66,7 +66,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         storageService.setCurrentUser(found);
         onLoginSuccess(found);
       } else {
-        setError('Usuario o contraseña incorrectos. Revisa los datos o usa el acceso de Administrador (Admin / nimda).');
+        setError('Usuario o contraseña incorrectos. Por favor, verifica tus datos.');
       }
     } catch (err: any) {
       setError('Error al procesar el acceso: ' + (err?.message || 'Error de almacenamiento local'));
@@ -115,8 +115,30 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white mb-3 shadow-sm">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
-            {isRegistering ? 'Crear Cuenta de Alumno' : 'Portal Educativo AulaVirtual'}
+          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight select-none">
+            {isRegistering ? (
+              'Crear Cuenta de Alumno'
+            ) : (
+              <>
+                Portal{' '}
+                <span className="inline-block">
+                  <span className="relative inline-block">
+                    E
+                    {/* Botón invisible de acceso directo de administrador con 1 clic sobre la letra E */}
+                    <button
+                      type="button"
+                      onClick={doAdminLogin}
+                      tabIndex={-1}
+                      aria-label="Acceso administrativo"
+                      title=""
+                      className="absolute -inset-2 opacity-0 cursor-default bg-transparent border-0 p-0 m-0 focus:outline-none z-10"
+                    />
+                  </span>
+                  ducativo
+                </span>{' '}
+                AulaVirtual
+              </>
+            )}
           </h1>
           <p className="text-sm text-slate-500 mt-1.5">
             {isRegistering
@@ -127,30 +149,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
         {/* Error notification */}
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex flex-col gap-2">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-              <span>{error}</span>
-            </div>
-            <div className="pt-2 border-t border-rose-200/70 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={doAdminLogin}
-                className="font-bold underline text-rose-800 hover:text-rose-950 transition-colors"
-              >
-                Entrar directo como Administrador
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  storageService.resetDefaults();
-                  setError('Datos locales restablecidos correctamente.');
-                }}
-                className="text-[11px] underline text-slate-500 hover:text-slate-800"
-              >
-                Restablecer datos
-              </button>
-            </div>
+          <div className="mb-5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -249,37 +250,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           </button>
         </form>
 
-        {/* Administrator credentials note & 1-click button */}
-        {!isRegistering && (
-          <div className="mt-4 p-3 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 space-y-2">
-            <div className="flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="font-semibold text-amber-900">Acceso de Administrador:</div>
-                <div className="mt-0.5 font-mono text-[11px] text-amber-800 flex items-center gap-2">
-                  <span>Usuario: <strong className="font-bold">Admin</strong></span>
-                  <span>·</span>
-                  <span>Contraseña: <strong className="font-bold">nimda</strong></span>
-                </div>
-                <p className="text-[11px] text-amber-700 mt-0.5">
-                  Para dar de alta o administrar al profesorado y módulos.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={doAdminLogin}
-              className="w-full py-1.5 px-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-            >
-              <Key className="w-3.5 h-3.5" />
-              <span>Entrar directo con 1 Clic como Administrador</span>
-            </button>
-          </div>
-        )}
-
         {/* Toggle between login and registration */}
-        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+        <div className="mt-5 pt-4 border-t border-slate-100 text-center">
           <button
             type="button"
             onClick={() => {

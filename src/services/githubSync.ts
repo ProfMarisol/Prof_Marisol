@@ -4,7 +4,7 @@ import { storageService } from './storage';
 const GITHUB_CONFIG_KEY = 'aulavirtual_github_sync_config';
 
 const DEFAULT_CONFIG: GitHubSyncConfig = {
-  owner: 'Prof_Marisol',
+  owner: 'ProfMarisol',
   repo: 'Prof_Marisol',
   branch: 'main',
   filePath: 'data/aulavirtual_db.json',
@@ -17,7 +17,13 @@ export const githubSyncService = {
     try {
       const stored = localStorage.getItem(GITHUB_CONFIG_KEY);
       if (stored) {
-        return { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+        const parsed = { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+        // Auto-correct common typo in username: Prof_Marisol -> ProfMarisol
+        if (parsed.owner === 'Prof_Marisol') {
+          parsed.owner = 'ProfMarisol';
+          this.saveConfig(parsed);
+        }
+        return parsed;
       }
     } catch {
       // Fallback
@@ -62,7 +68,8 @@ export const githubSyncService = {
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
       if (!res.ok) {
         if (res.status === 404) {
-          return { success: false, message: `El repositorio "${owner}/${repo}" no fue encontrado o es privado sin token de acceso.` };
+          const hint = owner.toLowerCase() === 'prof_marisol' ? ' Consejo: tu nombre de usuario en GitHub es "ProfMarisol" (sin guion bajo).' : '';
+          return { success: false, message: `El repositorio "${owner}/${repo}" no fue encontrado o es privado sin token de acceso. ${hint}`.trim() };
         }
         if (res.status === 401) {
           return { success: false, message: 'El Token de GitHub proporcionado no es válido o ha expirado.' };

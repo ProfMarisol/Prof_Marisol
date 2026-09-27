@@ -166,9 +166,18 @@ export const GitHubSyncModal: React.FC<GitHubSyncModalProps> = ({
                 type="text"
                 value={config.owner}
                 onChange={e => setConfig({ ...config, owner: e.target.value.trim() })}
-                placeholder="Prof_Marisol"
+                placeholder="ProfMarisol"
                 className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono"
               />
+              {config.owner.toLowerCase() === 'prof_marisol' && (
+                <button
+                  type="button"
+                  onClick={() => setConfig({ ...config, owner: 'ProfMarisol' })}
+                  className="mt-1 text-[11px] text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1 underline text-left"
+                >
+                  💡 Tu usuario es <strong>ProfMarisol</strong> (sin guion). Clic aquí para corregir.
+                </button>
+              )}
             </div>
 
             <div>
