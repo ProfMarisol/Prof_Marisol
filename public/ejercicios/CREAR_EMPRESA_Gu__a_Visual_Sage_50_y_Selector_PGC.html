@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía Visual: Configuración Inicial en Sage 50 y Selector de PGC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root,
+[data-theme='light'] {
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  --space-16: 4rem; --space-20: 5rem;
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafbfc;
+  --color-surface-offset: #eef0f3;
+  --color-divider: #e2e5ea;
+  --color-border: #d4d8de;
+  --color-text: #1a1d24;
+  --color-text-muted: #5c6370;
+  --color-text-faint: #9aa0ac;
+  --color-primary: #1b5e8a;
+  --color-primary-hover: #144a6e;
+  --color-primary-highlight: #e3eef5;
+  --color-accent: #c8862e;
+  --color-accent-highlight: #f5ece0;
+  --color-success: #2d7a3e;
+  --color-success-highlight: #e3f0e6;
+  --color-warning: #b85c1f;
+  --color-warning-highlight: #f5e6dc;
+  --color-error: #b32d3e;
+  --color-error-highlight: #f5dde0;
+  --radius-sm: 0.375rem; --radius-md: 0.5rem;
+  --radius-lg: 0.75rem; --radius-xl: 1rem;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+}
+[data-theme='dark'] {
+  --color-bg: #14161a;
+  --color-surface: #1c1f25;
+  --color-surface-2: #222631;
+  --color-surface-offset: #1a1d24;
+  --color-divider: #2a2e36;
+  --color-border: #363b46;
+  --color-text: #d8dce4;
+  --color-text-muted: #8b919e;
+  --color-text-faint: #5c626d;
+  --color-primary: #5ba3d4;
+  --color-primary-hover: #7ab8e0;
+  --color-primary-highlight: #1e2d38;
+  --color-accent: #e0a85e;
+  --color-accent-highlight: #2e2820;
+  --color-success: #6dbf7e;
+  --color-success-highlight: #1e2e24;
+  --color-warning: #e08a4e;
+  --color-warning-highlight: #2e251e;
+  --color-error: #e06a78;
+  --color-error-highlight: #2e1e22;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;scroll-behavior:smooth;scroll-padding-top:80px}
+body{min-height:100dvh;line-height:1.6;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background-color:var(--color-bg)}
+img,svg{display:block;max-width:100%;height:auto}
+input,button,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.2;text-wrap:balance}
+p,li{max-width:72ch;text-wrap:pretty}
+a{color:var(--color-primary);text-decoration:none;transition:color 180ms}
+a:hover{color:var(--color-primary-hover)}
+::selection{background:rgba(91,163,212,0.25)}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.header-inner{max-width:1200px;margin:0 auto;padding:var(--space-3) var(--space-6);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
+.logo{display:flex;align-items:center;gap:var(--space-3);font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text)}
+.logo svg{flex-shrink:0}
+.nav-links{display:flex;gap:var(--space-6);list-style:none}
+.nav-links a{font-size:var(--text-sm);font-weight:500;color:var(--color-text-muted)}
+.nav-links a:hover{color:var(--color-primary)}
+.theme-toggle{background:none;border:none;cursor:pointer;color:var(--color-text-muted);padding:var(--space-2);border-radius:var(--radius-md)}
+.theme-toggle:hover{color:var(--color-primary);background:var(--color-surface-offset)}
+@media(max-width:768px){.nav-links{display:none}}
+
+/* Layout */
+.container{max-width:1200px;margin:0 auto;padding:0 var(--space-6)}
+section{padding-block:clamp(var(--space-12),5vw,var(--space-20))}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--color-primary) 0%,#0d3d5e 100%);color:#fff;padding-block:clamp(var(--space-16),8vw,var(--space-24))}
+.hero h1{font-size:var(--text-2xl);font-weight:700;color:#fff;margin-bottom:var(--space-4)}
+.hero p{font-size:var(--text-lg);color:rgba(255,255,255,0.85);max-width:60ch}
+.hero-badges{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+.hero-badge{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:500}
+
+/* Section headers */
+.section-header{margin-bottom:var(--space-10)}
+.section-header h2{font-size:var(--text-xl);font-weight:700;margin-bottom:var(--space-3)}
+.section-header p{font-size:var(--text-base);color:var(--color-text-muted)}
+.section-num{display:inline-block;font-family:var(--font-body);font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-accent);margin-bottom:var(--space-2)}
+
+/* Step cards */
+.steps-grid{display:grid;gap:var(--space-6)}
+.step-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-sm);transition:box-shadow 200ms,border-color 200ms}
+.step-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-primary)}
+.step-header{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}
+.step-num{flex-shrink:0;width:40px;height:40px;background:var(--color-primary);color:#fff;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-lg)}
+.step-card h3{font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-2)}
+.step-card .step-desc{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:var(--space-4)}
+.step-details{display:flex;flex-direction:column;gap:var(--space-3)}
+.step-detail{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-2);border-radius:var(--radius-md);border:1px solid var(--color-divider)}
+.step-detail-icon{flex-shrink:0;width:20px;height:20px;color:var(--color-primary);margin-top:2px}
+.step-detail strong{font-weight:600;display:block;margin-bottom:var(--space-1)}
+.step-detail span{font-size:var(--text-sm);color:var(--color-text-muted)}
+.tip-box{margin-top:var(--space-4);padding:var(--space-4);background:var(--color-accent-highlight);border-left:3px solid var(--color-accent);border-radius:var(--radius-md);font-size:var(--text-sm)}
+.tip-box strong{color:var(--color-accent);display:block;margin-bottom:var(--space-1)}
+
+/* Interactive selector */
+.selector-wrapper{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:clamp(var(--space-6),4vw,var(--space-10));box-shadow:var(--shadow-md)}
+.selector-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8)}
+@media(max-width:900px){.selector-grid{grid-template-columns:1fr}}
+.form-group{margin-bottom:var(--space-5)}
+.form-group label{display:block;font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-2);color:var(--color-text)}
+.form-group .hint{font-size:var(--text-xs);color:var(--color-text-muted);font-weight:400;margin-bottom:var(--space-2)}
+.form-control{width:100%;padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--text-base);color:var(--color-text);transition:border-color 180ms,box-shadow 180ms}
+.form-control:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-highlight)}
+select.form-control{cursor:pointer}
+.input-suffix{position:relative}
+.input-suffix input{padding-right:var(--space-12)}
+.input-suffix .suffix{position:absolute;right:var(--space-4);top:50%;transform:translateY(-50%);color:var(--color-text-faint);font-size:var(--text-sm);pointer-events:none}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:var(--space-3) var(--space-6);background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;cursor:pointer;transition:background 180ms}
+.btn-primary:hover{background:var(--color-primary-hover)}
+
+/* Result card */
+.result-card{background:var(--color-surface-2);border:2px solid var(--color-primary);border-radius:var(--radius-lg);padding:var(--space-6);min-height:200px;display:flex;flex-direction:column;justify-content:center}
+.result-card.empty{border-style:dashed;border-color:var(--color-border);color:var(--color-text-muted);text-align:center}
+.result-card .result-label{font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:var(--space-2)}
+.result-card .result-pgc{font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--color-primary);margin-bottom:var(--space-3)}
+.result-card .result-norm{font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-4)}
+.result-card .result-reason{font-size:var(--text-sm);line-height:1.6;color:var(--color-text)}
+.result-card .result-reason ul{padding-left:var(--space-5);margin-top:var(--space-2)}
+.result-card .result-reason li{margin-bottom:var(--space-1)}
+.result-card .result-warning{margin-top:var(--space-4);padding:var(--space-3);background:var(--color-warning-highlight);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-warning)}
+.threshold-badge{display:inline-block;padding:2px var(--space-2);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:600;margin-left:var(--space-2)}
+.threshold-badge.pass{background:var(--color-success-highlight);color:var(--color-success)}
+.threshold-badge.fail{background:var(--color-error-highlight);color:var(--color-error)}
+
+/* Flowchart */
+.flowchart-wrapper{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:clamp(var(--space-6),4vw,var(--space-10));box-shadow:var(--shadow-sm);overflow-x:auto}
+.flowchart-svg{width:100%;min-width:800px;height:auto}
+
+/* Reference table */
+.ref-table{width:100%;border-collapse:collapse;background:var(--color-surface);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--color-border)}
+.ref-table th,.ref-table td{padding:var(--space-4);text-align:left;border-bottom:1px solid var(--color-divider);font-size:var(--text-sm)}
+.ref-table th{background:var(--color-surface-offset);font-weight:600;color:var(--color-text)}
+.ref-table tr:last-child td{border-bottom:none}
+.ref-table td a{font-weight:500}
+.ref-table .pgc-name{font-weight:600;color:var(--color-primary)}
+
+/* Footer */
+.footer{background:var(--color-surface);border-top:1px solid var(--color-border);padding:var(--space-8) 0}
+.footer-inner{max-width:1200px;margin:0 auto;padding:0 var(--space-6);text-align:center;font-size:var(--text-sm);color:var(--color-text-muted)}
+.footer-inner p{margin-bottom:var(--space-2)}
+.footer-disclaimer{font-size:var(--text-xs);color:var(--color-text-faint);max-width:80ch;margin:0 auto}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-card{animation:fadeIn 400ms ease-out backwards}
+.step-card:nth-child(1){animation-delay:50ms}
+.step-card:nth-child(2){animation-delay:100ms}
+.step-card:nth-child(3){animation-delay:150ms}
+.step-card:nth-child(4){animation-delay:200ms}
+.step-card:nth-child(5){animation-delay:250ms}
+.step-card:nth-child(6){animation-delay:300ms}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="6" width="24" height="20" rx="2"/>
+        <path d="M4 12h24M10 6V4M22 6V4"/>
+        <circle cx="11" cy="18" r="1.5" fill="currentColor"/>
+        <circle cx="16" cy="18" r="1.5" fill="currentColor"/>
+        <circle cx="21" cy="18" r="1.5" fill="currentColor"/>
+      </svg>
+      <span>Guía Sage 50</span>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#pasos">Configuración</a></li>
+        <li><a href="#selector">Selector PGC</a></li>
+        <li><a href="#diagrama">Diagrama</a></li>
+        <li><a href="#normativa">Normativa</a></li>
+      </ul>
+    </nav>
+    <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>Configuración Inicial de Empresa en Sage 50</h1>
+    <p>Guía visual paso a paso para el registro de CIF/DNI, periodos fiscales y dígitos de subcuenta, con un módulo interactivo para seleccionar el Plan General Contable adecuado según la normativa española vigente.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        RD 1514/2007 · RD 1515/2007
+      </span>
+      <span class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        Orden EHA/3360/2010 · RD 1491/2011
+      </span>
+      <span class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        Selector interactivo + Diagrama de flujo
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Step-by-step guide -->
+<section id="pasos">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">Parte 1</span>
+      <h2>Configuración paso a paso en Sage 50</h2>
+      <p>Los pasos siguientes reflejan el flujo del asistente de configuración de Sage 50 (ContaPlus) para crear una empresa nueva, basados en la documentación oficial de Sage. El orden puede variar ligeramente según la versión y los módulos contratados.</p>
+    </div>
+
+    <div class="steps-grid">
+
+      <!-- Step 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div>
+            <h3>Crear empresa e introducir CIF/DNI</h3>
+            <p class="step-desc">Acceso inicial y datos identificativos de la empresa</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            <div>
+              <strong>Menú Inicio → Empresas → Insertar / Añadir</strong>
+              <span>Se abre el asistente de configuración de empresas. Pulsa «Siguiente» para iniciar.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+            <div>
+              <strong>Código de empresa (4 caracteres alfanuméricos)</strong>
+              <span>Asigna un código identificativo. Una vez aceptado, el número de empresa no se podrá cambiar.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+            <div>
+              <strong>CIF/DNI de la empresa</strong>
+              <span>Introduce el NIF/CIF. Indica el tipo (con CIF o sin NIF), la sigla de nación y el DNI. Completa también nombre/razón social y forma jurídica.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div>
+              <strong>Domicilios: fiscal, social y comercial</strong>
+              <span>Registra el domicilio fiscal y social. El domicilio comercial está disponible si se dispone del módulo de nómina.</span>
+            </div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Importante</strong>
+          El CIF/DNI debe coincidir exactamente con el registrado en la AEAT. Un NIF incorrecto provocará errores al enviar facturas al SII (Suministro Inmediato de Información).
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Configurar moneda base y divisas</h3>
+            <p class="step-desc">Definición de la moneda de trabajo de la empresa</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9M9.69 8h11.62M7.38 12l5.74-9M9.69 16L3.95 7M14.31 16H2.69M16.62 12l-5.74 9"/></svg>
+            <div>
+              <strong>Moneda base</strong>
+              <span>Por defecto, el euro (€) para empresas con sede en España. La moneda funcional debe ser el euro para poder aplicar el PGC de Pymes.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3v18"/></svg>
+            <div>
+              <strong>Trabaja con divisas: Sí / No</strong>
+              <span>Habilita esta opción si la empresa opera con monedas distintas del euro. Si la moneda funcional no es el euro, no se podrá aplicar el PGC de Pymes.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Definir dígitos de subcuenta y longitud de cuenta</h3>
+            <p class="step-desc">Configuración de la estructura del plan contable — decide esto antes de contabilizar</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+            <div>
+              <strong>Datos varios → Gestión de cuentas</strong>
+              <span>Define el tipo de carácter de la cuenta y la longitud (número de caracteres) de la cuenta. La longitud debe estar entre 5 y 12 caracteres.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+            <div>
+              <strong>Dígitos de subcuenta</strong>
+              <span>Indica el número de dígitos que tendrán las subcuentas contables. Deben ser los mismos que en el ejercicio anterior si se crea un nuevo ejercicio sobre uno existente.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-5"/></svg>
+            <div>
+              <strong>Contabilidad → Definición de cuentas → Tamaño de campos</strong>
+              <span>Configura la longitud del campo «Cuenta» según lo definido en el paso anterior. Esto determina cuántos dígitos tendrá cada subcuenta del plan contable.</span>
+            </div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Decisión crítica</strong>
+          Los dígitos de subcuenta deben decidirse antes de empezar a contabilizar. Cambiar la longitud de cuenta después de introducir asientos puede requerir migraciones o ajustes manuales del plan contable. Lo más habitual en España es usar 9 o 10 dígitos (ej.: 430000001 para clientes).
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <div>
+            <h3>Seleccionar el Plan General Contable</h3>
+            <p class="step-desc">Creación del plan de cuentas según el PGC aplicable</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            <div>
+              <strong>Crear plan de cuentas</strong>
+              <span>Si la empresa no tiene plan de cuentas, pulsa «Crear plan de cuentas» y selecciona el plan correspondiente (PGC General, PGC Pyme, adaptación de cooperativas, adaptación de entidades sin fines lucrativos, etc.).</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <div>
+              <strong>Elementos que se crean automáticamente</strong>
+              <span>Grupos de cuentas, diarios y guías de contabilización correspondientes al plan seleccionado. No se importan datos fiscales.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v6l8 4 8-4V7"/></svg>
+            <div>
+              <strong>Cuentas por tipo impositivo (IVA)</strong>
+              <span>Configura el modelo de trabajo para las cuentas de tipo impositivo, por ejemplo la cuenta 472.21 para el 21% de IVA soportado.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 7h20M2 17h20"/></svg>
+            <div>
+              <strong>Criterio de IVA: Devengo o Caja</strong>
+              <span>Selecciona el criterio de IVA. Si la empresa se acoge al régimen especial del criterio de caja, configura las cuentas de IVA correspondientes.</span>
+            </div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>¿No sabes qué PGC elegir?</strong>
+          Utiliza el módulo interactivo de la Parte 2 para determinar el plan contable correcto según el tipo de entidad, activos, facturación y empleados.
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">5</div>
+          <div>
+            <h3>Definir periodos fiscales y ejercicio contable</h3>
+            <p class="step-desc">Configuración del ejercicio fiscal y apertura/cierre de periodos</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <div>
+              <strong>Fechas de inicio y fin del ejercicio</strong>
+              <span>Introduce la fecha de inicio (ej.: 01-01-2026) y fin del ejercicio (ej.: 31-12-2026). Fuera de este rango no se pueden incorporar asientos contables.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>
+            <div>
+              <strong>Contabilidad → Períodos → Nuevo ejercicio</strong>
+              <span>Crea el ejercicio contable y los periodos que contiene (mensual, trimestral, etc.). Un periodo cerrado no permite introducir movimientos; un periodo abierto sí.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1018 0 9 9 0 10-18 0z"/><path d="M12 7v5l3 2"/></svg>
+            <div>
+              <strong>Abrir / Cerrar periodos</strong>
+              <span>Utiliza «Abrir todos los periodos» o «Cerrar todos los periodos» para gestionar masivamente. Al cerrar, indica si también quieres cerrar los periodos analíticos.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18l7-5 7 5V3z"/></svg>
+            <div>
+              <strong>Aperturas y cierres</strong>
+              <span>Configura la fecha de apertura/cierre, comentario, número de diario, cuenta de resultados y si los saldos se generan individualmente o en un solo apunte.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-num">6</div>
+          <div>
+            <h3>Configurar asientos, facturas y prorrata</h3>
+            <p class="step-desc">Ajustes finales del comportamiento contable</p>
+          </div>
+        </div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 00-2 2v7h18v-7a2 2 0 00-2-2h-4M9 11V7a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+            <div>
+              <strong>Asientos y facturas</strong>
+              <span>Configura el tratamiento de descuadres, comportamiento al cuadrar asientos, importes negativos, control del importe máximo y control de número de factura de proveedores.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+            <div>
+              <strong>Contador de facturas</strong>
+              <span>Asignación automática del número de factura, verificación de duplicidades, y comportamiento del contador: único, por ejercicio o por año natural.</span>
+            </div>
+          </div>
+          <div class="step-detail">
+            <svg class="step-detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14"/></svg>
+            <div>
+              <strong>Prorrata</strong>
+              <span>Si la empresa trabaja con prorrata, indica el tipo (general o especial), el porcentaje, y si se aplica por sectores diferenciados.</span>
+            </div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>Verificación final</strong>
+          Antes de comenzar a contabilizar, revisa que el CIF/DNI, los dígitos de subcuenta, el plan contable seleccionado y las fechas del ejercicio sean correctos. Estos parámetros son difíciles de modificar una vez iniciada la actividad contable.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Interactive PGC Selector -->
+<section id="selector" style="background:var(--color-surface-offset)">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">Parte 2</span>
+      <h2>Selector interactivo de PGC</h2>
+      <p>Introduce los datos de tu empresa para obtener una recomendación del Plan General Contable aplicable. La selección se basa en la normativa vigente: tipo de entidad jurídica, umbrales de activo, facturación y empleados.</p>
+    </div>
+
+    <div class="selector-wrapper">
+      <div class="selector-grid">
+        <!-- Form -->
+        <div>
+          <div class="form-group">
+            <label for="entityType">Tipo de entidad jurídica</label>
+            <div class="hint">La forma jurídica determina qué normativa contable específica aplica</div>
+            <select id="entityType" class="form-control">
+              <option value="mercantil">Empresa mercantil (S.L., S.A.) o autónomo</option>
+              <option value="cooperativa">Sociedad cooperativa</option>
+              <option value="nolucro">Entidad sin fines lucrativos (fundación, asociación)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="activo">Total de las partidas del activo</label>
+            <div class="hint">Valor total del activo a la fecha de cierre del último ejercicio</div>
+            <div class="input-suffix">
+              <input type="number" id="activo" class="form-control" placeholder="0" min="0" step="1000">
+              <span class="suffix">€</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="facturacion">Importe neto de la cifra anual de negocios</label>
+            <div class="hint">Facturación anual neta (para entidades sin fines lucrativos: volumen anual de ingresos)</div>
+            <div class="input-suffix">
+              <input type="number" id="facturacion" class="form-control" placeholder="0" min="0" step="1000">
+              <span class="suffix">€</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="empleados">Número medio de trabajadores</label>
+            <div class="hint">Promedio de trabajadores empleados durante el ejercicio</div>
+            <div class="input-suffix">
+              <input type="number" id="empleados" class="form-control" placeholder="0" min="0" step="1">
+              <span class="suffix">pers.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ejercicios">¿Cuántos ejercicios consecutivos cumple estos límites?</label>
+            <div class="hint">Los umbrales del PGC Pyme deben cumplirse durante dos ejercicios consecutivos</div>
+            <select id="ejercicios" class="form-control">
+              <option value="1">1 ejercicio (incluido el de constitución)</option>
+              <option value="2">2 ejercicios consecutivos</option>
+              <option value="0">No cumple los límites</option>
+            </select>
+          </div>
+
+          <button class="btn-primary" id="calcBtn" style="margin-top:var(--space-4)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Calcular PGC recomendado
+          </button>
+        </div>
+
+        <!-- Result -->
+        <div>
+          <div class="result-card empty" id="resultCard">
+            <p>Completa el formulario y pulsa «Calcular PGC recomendado» para ver el plan contable aplicable a tu empresa.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Flowchart -->
+<section id="diagrama">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">Parte 3</span>
+      <h2>Diagrama de flujo para la selección del PGC</h2>
+      <p>Árbol de decisión visual que guía al usuario desde el tipo de entidad hasta el plan contable correcto. Sigue las flechas según las características de tu negocio.</p>
+    </div>
+
+    <div class="flowchart-wrapper">
+      <svg class="flowchart-svg" viewBox="0 0 1000 920" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--color-text-muted)"/>
+          </marker>
+          <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--color-primary)"/>
+          </marker>
+          <marker id="arrow-accent" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--color-accent)"/>
+          </marker>
+        </defs>
+
+        <!-- Start node -->
+        <rect x="375" y="20" width="250" height="50" rx="25" fill="var(--color-primary)" stroke="none"/>
+        <text x="500" y="50" text-anchor="middle" fill="#fff" font-size="14" font-weight="600" font-family="Inter,sans-serif">¿Qué tipo de entidad es?</text>
+
+        <!-- Arrows from start to 3 branches -->
+        <line x1="500" y1="70" x2="500" y2="90" stroke="var(--color-text-muted)" stroke-width="2"/>
+        <line x1="500" y1="90" x2="180" y2="90" stroke="var(--color-text-muted)" stroke-width="2"/>
+        <line x1="500" y1="90" x2="500" y2="90" stroke="var(--color-text-muted)" stroke-width="2"/>
+        <line x1="500" y1="90" x2="820" y2="90" stroke="var(--color-text-muted)" stroke-width="2"/>
+        <line x1="180" y1="90" x2="180" y2="120" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="500" y1="90" x2="500" y2="120" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="820" y1="90" x2="820" y2="120" stroke="var(--color-text-muted)" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- Branch labels -->
+        <text x="330" y="85" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Cooperativa</text>
+        <text x="500" y="85" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Empresa mercantil</text>
+        <text x="670" y="85" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Entidad sin ánimo de lucro</text>
+
+        <!-- Branch 1: Cooperativa -->
+        <rect x="60" y="120" width="240" height="60" rx="8" fill="var(--color-accent-highlight)" stroke="var(--color-accent)" stroke-width="2"/>
+        <text x="180" y="145" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">Normas sobre aspectos</text>
+        <text x="180" y="162" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">contables de cooperativas</text>
+
+        <line x1="180" y1="180" x2="180" y2="210" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+        <rect x="40" y="210" width="280" height="70" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+        <text x="180" y="232" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">Aplicación obligatoria para</text>
+        <text x="180" y="248" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">todas las cooperativas</text>
+        <text x="180" y="268" text-anchor="middle" fill="var(--color-accent)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Orden EHA/3360/2010</text>
+
+        <line x1="180" y1="280" x2="180" y2="310" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+        <polygon points="180,310 290,355 180,400 70,355" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+        <text x="180" y="350" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">¿Cumple umbrales</text>
+        <text x="180" y="365" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">de Pyme? (2 de 3)</text>
+
+        <!-- Cooperativa: Yes -->
+        <line x1="180" y1="400" x2="180" y2="430" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="195" y="418" fill="var(--color-success)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Sí</text>
+
+        <rect x="50" y="430" width="260" height="55" rx="8" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="2"/>
+        <text x="180" y="452" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC Pyme + Adaptación</text>
+        <text x="180" y="470" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">cooperativas (RD 1515/2007)</text>
+
+        <!-- Cooperativa: No -->
+        <line x1="70" y1="355" x2="30" y2="355" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="30" y1="355" x2="30" y2="520" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="30" y1="520" x2="100" y2="520" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="42" y="345" fill="var(--color-error)" font-size="11" font-weight="600" font-family="Inter,sans-serif">No</text>
+
+        <rect x="100" y="495" width="160" height="50" rx="8" fill="var(--color-primary-highlight)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="180" y="517" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC General</text>
+        <text x="180" y="534" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">+ Adaptación cooperativas</text>
+
+        <!-- Branch 2: Empresa mercantil -->
+        <rect x="370" y="120" width="260" height="60" rx="8" fill="var(--color-primary-highlight)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="500" y="145" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">Empresa mercantil o</text>
+        <text x="500" y="162" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">empresario individual</text>
+
+        <line x1="500" y1="180" x2="500" y2="210" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+        <polygon points="500,205 660,275 500,345 340,275" fill="var(--color-surface)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="500" y="262" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">¿Cumple al menos 2 de 3</text>
+        <text x="500" y="278" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">umbrales Pyme?</text>
+        <text x="500" y="298" text-anchor="middle" fill="var(--color-text-muted)" font-size="10" font-family="Inter,sans-serif">Activo ≤ 4M€ · Cifra ≤ 8M€ · ≤ 50</text>
+
+        <!-- Mercantil: Yes -->
+        <line x1="500" y1="345" x2="500" y2="360" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="515" y="348" fill="var(--color-success)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Sí</text>
+
+        <rect x="380" y="360" width="240" height="55" rx="8" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="2"/>
+        <text x="500" y="382" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC de Pymes</text>
+        <text x="500" y="400" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">RD 1515/2007</text>
+
+        <line x1="500" y1="415" x2="500" y2="445" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+        <polygon points="500,445 620,490 500,535 380,490" fill="var(--color-surface)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="500" y="485" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">¿Cumple umbrales</text>
+        <text x="500" y="500" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">de microempresa?</text>
+
+        <!-- Micro: Yes -->
+        <line x1="500" y1="535" x2="500" y2="565" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="515" y="553" fill="var(--color-success)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Sí</text>
+
+        <rect x="390" y="565" width="220" height="55" rx="8" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="2"/>
+        <text x="500" y="587" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">Criterios de microempresa</text>
+        <text x="500" y="605" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Art. 4 RD 1515/2007</text>
+
+        <!-- Micro: No -->
+        <line x1="620" y1="490" x2="660" y2="490" stroke="var(--color-primary)" stroke-width="2"/>
+        <line x1="660" y1="490" x2="660" y2="650" stroke="var(--color-primary)" stroke-width="2"/>
+        <line x1="660" y1="650" x2="610" y2="650" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="635" y="483" fill="var(--color-error)" font-size="11" font-weight="600" font-family="Inter,sans-serif">No</text>
+
+        <rect x="390" y="635" width="220" height="35" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+        <text x="500" y="657" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-style="italic" font-family="Inter,sans-serif">Aplicar PGC Pyme sin microempresa</text>
+
+        <!-- Mercantil: No (PGC General) -->
+        <line x1="360" y1="270" x2="320" y2="270" stroke="var(--color-primary)" stroke-width="2"/>
+        <line x1="320" y1="270" x2="320" y2="710" stroke="var(--color-primary)" stroke-width="2"/>
+        <line x1="320" y1="710" x2="390" y2="710" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="335" y="263" fill="var(--color-error)" font-size="11" font-weight="600" font-family="Inter,sans-serif">No</text>
+
+        <rect x="390" y="685" width="220" height="50" rx="8" fill="var(--color-primary-highlight)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="500" y="707" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC General</text>
+        <text x="500" y="724" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">RD 1514/2007</text>
+
+        <!-- Branch 3: Entidad sin fines lucrativos -->
+        <rect x="700" y="120" width="240" height="60" rx="8" fill="var(--color-accent-highlight)" stroke="var(--color-accent)" stroke-width="2"/>
+        <text x="820" y="145" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">Entidad sin fines</text>
+        <text x="820" y="162" text-anchor="middle" fill="var(--color-text)" font-size="13" font-weight="600" font-family="Inter,sans-serif">lucrativos (ESFL)</text>
+
+        <line x1="820" y1="180" x2="820" y2="210" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+        <rect x="680" y="210" width="280" height="70" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+        <text x="820" y="232" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">Adaptación del PGC a ESFL</text>
+        <text x="820" y="248" text-anchor="middle" fill="var(--color-text)" font-size="12" font-family="Inter,sans-serif">(aplicación obligatoria para</text>
+        <text x="820" y="268" text-anchor="middle" fill="var(--color-accent)" font-size="11" font-weight="600" font-family="Inter,sans-serif">fundaciones y asociaciones de utilidad pública)</text>
+
+        <line x1="820" y1="280" x2="820" y2="310" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+        <polygon points="820,310 940,355 820,400 700,355" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+        <text x="820" y="350" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">¿Cumple umbrales</text>
+        <text x="820" y="365" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">de Pyme? (2 de 3)</text>
+
+        <!-- ESFL: Yes -->
+        <line x1="820" y1="400" x2="820" y2="430" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="835" y="418" fill="var(--color-success)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Sí</text>
+
+        <rect x="690" y="430" width="260" height="55" rx="8" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="2"/>
+        <text x="820" y="452" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC Pyme + Adaptación ESFL</text>
+        <text x="820" y="470" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">RD 1515/2007 + RD 1491/2011</text>
+
+        <line x1="820" y1="485" x2="820" y2="515" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+
+        <polygon points="820,515 940,560 820,605 700,560" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+        <text x="820" y="555" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">¿Cumple umbrales</text>
+        <text x="820" y="570" text-anchor="middle" fill="var(--color-text)" font-size="11" font-family="Inter,sans-serif">de microentidad?</text>
+
+        <!-- ESFL Micro: Yes -->
+        <line x1="820" y1="605" x2="820" y2="635" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="835" y="623" fill="var(--color-success)" font-size="11" font-weight="600" font-family="Inter,sans-serif">Sí</text>
+
+        <rect x="700" y="635" width="240" height="55" rx="8" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="2"/>
+        <text x="820" y="657" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">Criterios de microentidad</text>
+        <text x="820" y="675" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Activo ≤ 150K€ · Ingresos ≤ 150K€ · ≤ 5</text>
+
+        <!-- ESFL Micro: No -->
+        <line x1="940" y1="560" x2="970" y2="560" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="970" y1="560" x2="970" y2="710" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="970" y1="710" x2="940" y2="710" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="948" y="553" fill="var(--color-error)" font-size="11" font-weight="600" font-family="Inter,sans-serif">No</text>
+
+        <rect x="700" y="700" width="240" height="40" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1.5"/>
+        <text x="820" y="725" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-style="italic" font-family="Inter,sans-serif">PGC Pyme + Adaptación ESFL (sin micro)</text>
+
+        <!-- ESFL: No (PGC General + adaptación) -->
+        <line x1="700" y1="355" x2="660" y2="355" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="660" y1="355" x2="660" y2="780" stroke="var(--color-accent)" stroke-width="2"/>
+        <line x1="660" y1="780" x2="700" y2="780" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="672" y="348" fill="var(--color-error)" font-size="11" font-weight="600" font-family="Inter,sans-serif">No</text>
+
+        <rect x="700" y="755" width="240" height="50" rx="8" fill="var(--color-primary-highlight)" stroke="var(--color-primary)" stroke-width="2"/>
+        <text x="820" y="777" text-anchor="middle" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">PGC General + Adaptación ESFL</text>
+        <text x="820" y="794" text-anchor="middle" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">RD 1514/2007 + RD 1491/2011</text>
+
+        <!-- Legend -->
+        <rect x="40" y="830" width="920" height="70" rx="8" fill="var(--color-surface-2)" stroke="var(--color-border)" stroke-width="1"/>
+        <text x="60" y="855" fill="var(--color-text)" font-size="12" font-weight="600" font-family="Inter,sans-serif">Leyenda:</text>
+        <rect x="60" y="865" width="16" height="16" rx="3" fill="var(--color-success-highlight)" stroke="var(--color-success)" stroke-width="1.5"/>
+        <text x="84" y="877" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">PGC Pyme / microempresa (marco simplificado)</text>
+        <rect x="380" y="865" width="16" height="16" rx="3" fill="var(--color-primary-highlight)" stroke="var(--color-primary)" stroke-width="1.5"/>
+        <text x="404" y="877" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">PGC General (marco completo)</text>
+        <rect x="650" y="865" width="16" height="16" rx="3" fill="var(--color-accent-highlight)" stroke="var(--color-accent)" stroke-width="1.5"/>
+        <text x="674" y="877" fill="var(--color-text-muted)" font-size="11" font-family="Inter,sans-serif">Adaptación sectorial específica</text>
+
+        <text x="500" y="893" text-anchor="middle" fill="var(--color-text-faint)" font-size="10" font-style="italic" font-family="Inter,sans-serif">Los umbrales deben cumplirse durante dos ejercicios consecutivos. La opción elegida debe mantenerse mínimo 3 ejercicios.</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- Regulatory reference -->
+<section id="normativa" style="background:var(--color-surface-offset)">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">Parte 4</span>
+      <h2>Normativa aplicable</h2>
+      <p>Referencias normativas que sustentan cada plan contable. Verifica siempre la versión consolidada vigente en el BOE.</p>
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Plan contable</th>
+          <th>Normativa</th>
+          <th>Ámbito de aplicación</th>
+          <th>Fuente</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="pgc-name">PGC General</td>
+          <td>Real Decreto 1514/2007</td>
+          <td>Todas las empresas que no apliquen el PGC de Pymes</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2007-19965" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+        <tr>
+          <td class="pgc-name">PGC de Pymes</td>
+          <td>Real Decreto 1515/2007</td>
+          <td>Empresas que durante 2 ejercicios consecutivos cumplan al menos 2 de 3: activo ≤ 4M€, cifra de negocios ≤ 8M€, empleados ≤ 50</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2007-19966" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+        <tr>
+          <td class="pgc-name">Microempresa</td>
+          <td>Art. 4 RD 1515/2007</td>
+          <td>Empresas con PGC Pyme que cumplan al menos 2 de 3: activo ≤ 1M€, cifra ≤ 2M€, empleados ≤ 10</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2007-19966" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+        <tr>
+          <td class="pgc-name">Cooperativas</td>
+          <td>Orden EHA/3360/2010</td>
+          <td>Aplicación obligatoria para todas las sociedades cooperativas. Complementa al PGC o PGC Pyme</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2010-20034" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+        <tr>
+          <td class="pgc-name">Entidades sin fines lucrativos</td>
+          <td>Real Decreto 1491/2011</td>
+          <td>Fundaciones de competencia estatal y asociaciones de utilidad pública. Complementa al PGC o PGC Pyme</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2011-18458" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+        <tr>
+          <td class="pgc-name">ESFL — Microentidad</td>
+          <td>RD 1491/2011 (criterios específicos)</td>
+          <td>Entidades sin fines lucrativos con PGC Pyme que cumplan: activo ≤ 150K€, ingresos ≤ 150K€, empleados ≤ 5</td>
+          <td><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2011-18458" target="_blank" rel="noopener">BOE.es</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Guía visual de configuración en Sage 50 y selector de PGC</strong></p>
+    <p class="footer-disclaimer">Esta guía tiene carácter informativo y educativo. Los pasos de configuración se basan en la documentación oficial de Sage (es-kb.sage.com y soporte.sage.es). La normativa contable se basa en los Reales Decretos y Órdenes ministeriales vigentes consultados en el BOE. Consulta siempre a un asesor contable profesional para validar el plan contable aplicable a tu empresa concreta.</p>
+  </div>
+</footer>
+
+<script>
+// Theme toggle
+(function() {
+  const t = document.querySelector('[data-theme-toggle]'),
+    r = document.documentElement;
+  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  r.setAttribute('data-theme', d);
+  t && t.addEventListener('click', () => {
+    d = d === 'dark' ? 'light' : 'dark';
+    r.setAttribute('data-theme', d);
+    t.setAttribute('aria-label', 'Cambiar a modo ' + (d === 'dark' ? 'claro' : 'oscuro'));
+    t.innerHTML = d === 'dark'
+      ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+  });
+})();
+
+// PGC Selector logic
+(function() {
+  const calcBtn = document.getElementById('calcBtn');
+  const resultCard = document.getElementById('resultCard');
+
+  // Thresholds (in euros)
+  const PYME = { activo: 4000000, facturacion: 8000000, empleados: 50 };
+  const MICRO = { activo: 1000000, facturacion: 2000000, empleados: 10 };
+  const MICRO_ESFL = { activo: 150000, facturacion: 150000, empleados: 5 };
+
+  calcBtn.addEventListener('click', function() {
+    const entityType = document.getElementById('entityType').value;
+    const activo = parseFloat(document.getElementById('activo').value) || 0;
+    const facturacion = parseFloat(document.getElementById('facturacion').value) || 0;
+    const empleados = parseFloat(document.getElementById('empleados').value) || 0;
+    const ejercicios = parseInt(document.getElementById('ejercicios').value);
+
+    // Count how many Pyme thresholds are met
+    let pymeCount = 0;
+    if (activo <= PYME.activo) pymeCount++;
+    if (facturacion <= PYME.facturacion) pymeCount++;
+    if (empleados <= PYME.empleados) pymeCount++;
+    const meetsPyme = pymeCount >= 2;
+
+    // Count micro thresholds
+    let microCount = 0;
+    const microThresholds = entityType === 'nolucro' ? MICRO_ESFL : MICRO;
+    if (activo <= microThresholds.activo) microCount++;
+    if (facturacion <= microThresholds.facturacion) microCount++;
+    if (empleados <= microThresholds.empleados) microCount++;
+    const meetsMicro = microCount >= 2;
+
+    // Check exercise requirement
+    const meetsExerciseReq = ejercicios >= 1; // 1 or 2 means they meet limits; 0 means they don't
+
+    let result = {
+      pgc: '',
+      norm: '',
+      reason: '',
+      details: [],
+      warning: ''
+    };
+
+    // Exclusion checks for PGC Pyme
+    let pymeExcluded = false;
+    let exclusionReason = '';
+
+    if (entityType === 'cooperativa') {
+      // Cooperativas: always apply Orden EHA/3360/2010
+      result.details.push('Las normas sobre aspectos contables de cooperativas (Orden EHA/3360/2010) son de aplicación obligatoria para todas las sociedades cooperativas, con independencia de su tamaño.');
+
+      if (meetsPyme && meetsExerciseReq) {
+        result.pgc = 'PGC de Pymes + Adaptación para cooperativas';
+        result.norm = 'RD 1515/2007 + Orden EHA/3360/2010';
+        result.details.push('Al cumplir los umbrales de Pyme (al menos 2 de 3), puede aplicar el PGC de Pymes complementado por las normas específicas de cooperativas.');
+        if (meetsMicro) {
+          result.details.push('Además, cumple los umbrales de microempresa, por lo que puede aplicar los criterios específicos de microempresa (art. 4 RD 1515/2007).');
+        }
+      } else {
+        result.pgc = 'PGC General + Adaptación para cooperativas';
+        result.norm = 'RD 1514/2007 + Orden EHA/3360/2010';
+        result.details.push('Al no cumplir los umbrales de Pyme, debe aplicar el PGC General complementado por las normas específicas de cooperativas.');
+      }
+      result.warning = 'Las cooperativas de crédito y de seguros se rigen por normativa contable específica propia. Las cooperativas con sección de crédito aplican normativa específica para esa sección.';
+    } else if (entityType === 'nolucro') {
+      // Entidades sin fines lucrativos: always apply RD 1491/2011 adaptation
+      result.details.push('Las normas de adaptación del PGC a entidades sin fines lucrativos (RD 1491/2011) son de aplicación obligatoria para fundaciones de competencia estatal y asociaciones declaradas de utilidad pública.');
+
+      if (meetsPyme && meetsExerciseReq) {
+        result.pgc = 'PGC de Pymes + Adaptación ESFL';
+        result.norm = 'RD 1515/2007 + RD 1491/2011';
+        result.details.push('Al cumplir los umbrales de Pyme (al menos 2 de 3), puede aplicar el PGC de Pymes complementado por la adaptación a entidades sin fines lucrativos.');
+        if (meetsMicro) {
+          result.pgc = 'Criterios de microentidad + Adaptación ESFL';
+          result.norm = 'RD 1491/2011 (criterios microentidad)';
+          result.details.push('Además, cumple los umbrales de microentidad (activo ≤ 150.000€, ingresos ≤ 150.000€, empleados ≤ 5), por lo que puede aplicar los criterios específicos de microentidad.');
+        }
+      } else {
+        result.pgc = 'PGC General + Adaptación ESFL';
+        result.norm = 'RD 1514/2007 + RD 1491/2011';
+        result.details.push('Al no cumplir los umbrales de Pyme, debe aplicar el PGC General complementado por la adaptación a entidades sin fines lucrativos.');
+      }
+      result.warning = 'Las federaciones deportivas y clubes profesionales tienen normativa contable específica propia. Verifica si tu entidad está excluida de la adaptación general del RD 1491/2011.';
+    } else {
+      // Empresa mercantil / autónomo
+      if (meetsPyme && meetsExerciseReq) {
+        if (ejercicios === 1) {
+          result.pgc = 'PGC de Pymes (provisional)';
+          result.norm = 'RD 1515/2007 — Art. 2';
+          result.details.push('Cumple los umbrales en el ejercicio de constitución. Puede aplicar el PGC de Pymes si al cierre del primer ejercicio reúne al menos 2 de las 3 circunstancias.');
+          result.warning = 'Deberá verificar el cumplimiento de los umbrales en el segundo ejercicio para consolidar la aplicación del PGC de Pymes.';
+        } else {
+          result.pgc = 'PGC de Pymes';
+          result.norm = 'RD 1515/2007';
+          result.details.push('Cumple al menos 2 de los 3 umbrales durante dos ejercicios consecutivos, por lo que puede aplicar el PGC de Pymes.');
+        }
+        if (meetsMicro) {
+          result.details.push('Además, cumple los umbrales de microempresa (activo ≤ 1.000.000€, cifra ≤ 2.000.000€, empleados ≤ 10), por lo que puede aplicar los criterios específicos de microempresa (art. 4 RD 1515/2007).');
+        }
+      } else {
+        result.pgc = 'PGC General';
+        result.norm = 'RD 1514/2007';
+        result.details.push('No cumple los umbrales del PGC de Pymes (al menos 2 de 3: activo ≤ 4M€, cifra ≤ 8M€, empleados ≤ 50), por lo que debe aplicar el PGC General.');
+      }
+
+      // Check exclusions
+      if (facturacion === 0 && activo === 0 && empleados === 0) {
+        result.warning = 'No has introducido datos. Añade los valores reales de tu empresa para obtener una recomendación precisa.';
+      } else {
+        result.warning = 'No podrán aplicar el PGC de Pymes las entidades de interés público, las que formen parte de un grupo que formule cuentas consolidadas, las con moneda funcional distinta del euro, y las entidades financieras que capten fondos del público.';
+      }
+    }
+
+    // Build threshold badges
+    const activoBadge = activo <= PYME.activo
+      ? '<span class="threshold-badge pass">✓</span>'
+      : '<span class="threshold-badge fail">✗</span>';
+    const factBadge = facturacion <= PYME.facturacion
+      ? '<span class="threshold-badge pass">✓</span>'
+      : '<span class="threshold-badge fail">✗</span>';
+    const empBadge = empleados <= PYME.empleados
+      ? '<span class="threshold-badge pass">✓</span>'
+      : '<span class="threshold-badge fail">✗</span>';
+
+    let reasonHtml = '<div class="result-reason"><ul>';
+    result.details.forEach(function(d) {
+      reasonHtml += '<li>' + d + '</li>';
+    });
+    reasonHtml += '</ul>';
+
+    // Add threshold summary for mercantil
+    if (entityType === 'mercantil' && (activo > 0 || facturacion > 0 || empleados > 0)) {
+      reasonHtml += '<div style="margin-top:var(--space-3);font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Umbrales Pyme: Activo ≤ 4M€ ' + activoBadge + ' · Cifra ≤ 8M€ ' + factBadge + ' · Empleados ≤ 50 ' + empBadge + '</div>';
+    }
+
+    if (result.warning) {
+      reasonHtml += '<div class="result-warning">⚠ ' + result.warning + '</div>';
+    }
+    reasonHtml += '</div>';
+
+    resultCard.classList.remove('empty');
+    resultCard.style.borderColor = 'var(--color-primary)';
+    resultCard.innerHTML =
+      '<div class="result-label">PGC recomendado</div>' +
+      '<div class="result-pgc">' + result.pgc + '</div>' +
+      '<div class="result-norm">' + result.norm + '</div>' +
+      reasonHtml;
+  });
+})();
+</script>
+
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
