@@ -8,11 +8,41 @@ const STORAGE_KEYS = {
   SUBMISSIONS: 'aulavirtual_submissions',
 };
 
+// In-memory fallback if localStorage is disabled or throws SecurityError
+const memoryStore: Record<string, string> = {};
+
+function safeGet(key: string): string | null {
+  try {
+    const val = localStorage.getItem(key);
+    return val !== null ? val : (memoryStore[key] ?? null);
+  } catch {
+    return memoryStore[key] ?? null;
+  }
+}
+
+function safeSet(key: string, value: string): void {
+  memoryStore[key] = value;
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // In-memory fallback active
+  }
+}
+
+function safeRemove(key: string): void {
+  delete memoryStore[key];
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // In-memory fallback active
+  }
+}
+
 export const storageService = {
   // Authentication
   getCurrentUser(): User | null {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      const stored = safeGet(STORAGE_KEYS.CURRENT_USER);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -20,17 +50,21 @@ export const storageService = {
   },
 
   setCurrentUser(user: User | null): void {
-    if (user) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    try {
+      if (user) {
+        safeSet(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      } else {
+        safeRemove(STORAGE_KEYS.CURRENT_USER);
+      }
+    } catch {
+      // Ignored
     }
   },
 
   // Users
   getUsers(): User[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.USERS);
+      const stored = safeGet(STORAGE_KEYS.USERS);
       let users: User[] = stored ? JSON.parse(stored) : [];
       if (!Array.isArray(users) || users.length === 0) {
         this.saveUsers(INITIAL_USERS);
@@ -54,7 +88,11 @@ export const storageService = {
   },
 
   saveUsers(users: User[]): void {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    try {
+      safeSet(STORAGE_KEYS.USERS, JSON.stringify(users));
+    } catch {
+      // Ignored
+    }
   },
 
   addUser(user: User): void {
@@ -66,7 +104,7 @@ export const storageService = {
   // Modules
   getModules(): ModulePage[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.MODULES);
+      const stored = safeGet(STORAGE_KEYS.MODULES);
       if (stored) {
         return JSON.parse(stored);
       }
@@ -78,7 +116,11 @@ export const storageService = {
   },
 
   saveModules(modules: ModulePage[]): void {
-    localStorage.setItem(STORAGE_KEYS.MODULES, JSON.stringify(modules));
+    try {
+      safeSet(STORAGE_KEYS.MODULES, JSON.stringify(modules));
+    } catch {
+      // Ignored
+    }
   },
 
   getModuleById(id: string): ModulePage | undefined {
@@ -105,7 +147,7 @@ export const storageService = {
   // Submissions
   getSubmissions(): StudentSubmission[] {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
+      const stored = safeGet(STORAGE_KEYS.SUBMISSIONS);
       if (stored) {
         return JSON.parse(stored);
       }
@@ -117,7 +159,11 @@ export const storageService = {
   },
 
   saveSubmissions(submissions: StudentSubmission[]): void {
-    localStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    try {
+      safeSet(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    } catch {
+      // Ignored
+    }
   },
 
   addSubmission(submission: StudentSubmission): void {
