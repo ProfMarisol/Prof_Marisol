@@ -1,0 +1,28 @@
+{
+  "submission": {
+    "id": "sub-1790547042342",
+    "studentId": "user-student-1",
+    "studentName": "Sofía Martínez",
+    "moduleId": "mod-1790546617380",
+    "moduleTitle": "Simulador Contable Sage 50 – PGC España (v2)",
+    "answers": {},
+    "score": 10,
+    "maxScore": 10,
+    "percentage": 100,
+    "submittedAt": "2026-09-27T22:10:42.342Z",
+    "feedback": "¡Excelente trabajo! Has demostrado un dominio notable de los conceptos."
+  },
+  "student": {
+    "id": "user-student-1",
+    "username": "alumno1",
+    "name": "Sofía Martínez",
+    "gradeGroup": "3º ESO - Grupo A"
+  },
+  "module": {
+    "id": "mod-1790546617380",
+    "title": "Simulador Contable Sage 50 – PGC España (v2)",
+    "subject": "CONTABILIDAD",
+    "author": "Marisol"
+  },
+  "savedAt": "2026-09-27T22:10:42.880Z"
+}
