@@ -19,17 +19,40 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setError(null);
 
-    const users = storageService.getUsers();
     const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    // 1. Direct Administrator Login (Admin / nimda) - works guaranteed in all environments
+    if (cleanUser === 'admin' && cleanPass === 'nimda') {
+      const adminUser: User = {
+        id: 'user-admin',
+        username: 'admin',
+        password: 'nimda',
+        name: 'Administrador Principal',
+        role: 'teacher',
+        gradeGroup: 'Administración del Centro',
+      };
+      const users = storageService.getUsers();
+      if (!users.some(u => u.username.toLowerCase() === 'admin')) {
+        users.unshift(adminUser);
+        storageService.saveUsers(users);
+      }
+      storageService.setCurrentUser(adminUser);
+      onLoginSuccess(adminUser);
+      return;
+    }
+
+    // 2. Standard user matching (with trimmed comparisons)
+    const users = storageService.getUsers();
     const found = users.find(
-      u => u.username.toLowerCase() === cleanUser && u.password === password
+      u => u.username.trim().toLowerCase() === cleanUser && (u.password || '').trim() === cleanPass
     );
 
     if (found) {
       storageService.setCurrentUser(found);
       onLoginSuccess(found);
     } else {
-      setError('Usuario o contraseña incorrectos. Revisa los datos o usa las cuentas de prueba.');
+      setError('Usuario o contraseña incorrectos. Revisa los datos o usa las credenciales del Administrador (Admin / nimda).');
     }
   };
 
@@ -119,7 +142,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                 required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder={isRegistering ? 'carlos_m' : 'profesor o alumno1'}
+                placeholder={isRegistering ? 'carlos_m' : 'Admin, profesor o alumno1'}
                 className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
               />
               <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -166,6 +189,24 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
+
+        {/* Administrator credentials note */}
+        {!isRegistering && (
+          <div className="mt-4 p-3 rounded-xl bg-amber-50/90 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-semibold text-amber-900">Acceso de Administrador:</div>
+              <div className="mt-0.5 font-mono text-[11px] text-amber-800 flex items-center gap-2">
+                <span>Usuario: <strong className="font-bold">Admin</strong></span>
+                <span>·</span>
+                <span>Contraseña: <strong className="font-bold">nimda</strong></span>
+              </div>
+              <p className="text-[11px] text-amber-700 mt-0.5">
+                Acceso para gestionar y crear las cuentas del profesorado.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Toggle between login and registration */}
         <div className="mt-4 pt-4 border-t border-slate-100 text-center">

@@ -74,6 +74,16 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
   const confirmDeleteTeacher = () => {
     if (!teacherToDelete) return;
 
+    const targetUser = users.find(u => u.id === teacherToDelete.id);
+    if (targetUser?.username.toLowerCase() === 'admin') {
+      setFeedbackMsg({ 
+        text: 'La cuenta principal de Administrador (Admin) está protegida y no se puede eliminar.', 
+        type: 'error' 
+      });
+      setTeacherToDelete(null);
+      return;
+    }
+
     if (teachers.length <= 1) {
       setFeedbackMsg({ 
         text: 'No es posible eliminar al único profesor del centro.', 
@@ -269,12 +279,18 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
                 <tbody className="divide-y divide-slate-100">
                   {teachers.map(teacher => {
                     const isSelf = teacher.id === currentUser.id;
+                    const isAdminRoot = teacher.username.toLowerCase() === 'admin';
                     return (
                       <tr key={teacher.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3 px-4">
                           <div className="font-semibold text-slate-900 flex items-center gap-2">
                             <span>{teacher.name}</span>
-                            {isSelf && (
+                            {isAdminRoot && (
+                              <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full border border-amber-300">
+                                Administrador Principal
+                              </span>
+                            )}
+                            {isSelf && !isAdminRoot && (
                               <span className="text-[10px] bg-indigo-100 text-indigo-700 font-semibold px-1.5 py-0.5 rounded-full">
                                 Tu cuenta actual
                               </span>
@@ -293,23 +309,29 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setTeacherToDelete({ id: teacher.id, name: teacher.name })}
-                            disabled={teachers.length <= 1}
-                            className={`p-1.5 rounded-md transition-colors ${
-                              teachers.length <= 1
-                                ? 'text-slate-300 cursor-not-allowed'
-                                : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
-                            }`}
-                            title={
-                              teachers.length <= 1
-                                ? 'No puedes eliminar al único profesor del centro'
-                                : `Quitar a ${teacher.name}`
-                            }
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {isAdminRoot ? (
+                            <span className="text-[11px] text-slate-400 italic px-2 py-1 select-none">
+                              Fijo
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setTeacherToDelete({ id: teacher.id, name: teacher.name })}
+                              disabled={teachers.length <= 1}
+                              className={`p-1.5 rounded-md transition-colors ${
+                                teachers.length <= 1
+                                  ? 'text-slate-300 cursor-not-allowed'
+                                  : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
+                              }`}
+                              title={
+                                teachers.length <= 1
+                                  ? 'No puedes eliminar al único profesor del centro'
+                                  : `Quitar a ${teacher.name}`
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

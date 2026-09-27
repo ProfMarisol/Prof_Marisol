@@ -2,6 +2,14 @@ import { ModulePage, User, StudentSubmission } from '../types';
 
 export const INITIAL_USERS: User[] = [
   {
+    id: 'user-admin',
+    username: 'admin',
+    password: 'nimda',
+    name: 'Administrador Principal',
+    role: 'teacher',
+    gradeGroup: 'Administración del Centro',
+  },
+  {
     id: 'user-teacher-1',
     username: 'profesor',
     password: 'profe123',

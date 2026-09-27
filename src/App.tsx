@@ -94,7 +94,11 @@ export default function App() {
           <LoginView
             onLoginSuccess={(user) => {
               setCurrentUser(user);
-              setCurrentView({ type: 'dashboard' });
+              if (user.username.toLowerCase() === 'admin') {
+                handleNavigate({ type: 'teachers-manager' });
+              } else {
+                handleNavigate({ type: 'dashboard' });
+              }
             }}
           />
         ) : (

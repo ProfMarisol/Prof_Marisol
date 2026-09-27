@@ -31,11 +31,23 @@ export const storageService = {
   getUsers(): User[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.USERS);
-      if (stored) {
-        return JSON.parse(stored);
+      let users: User[] = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(users) || users.length === 0) {
+        this.saveUsers(INITIAL_USERS);
+        return INITIAL_USERS;
       }
-      this.saveUsers(INITIAL_USERS);
-      return INITIAL_USERS;
+
+      // Ensure the Admin user always exists even if users were stored previously
+      const hasAdmin = users.some(u => u.username.toLowerCase() === 'admin');
+      if (!hasAdmin) {
+        const adminUser = INITIAL_USERS.find(u => u.username.toLowerCase() === 'admin');
+        if (adminUser) {
+          users.unshift(adminUser);
+          this.saveUsers(users);
+        }
+      }
+
+      return users;
     } catch {
       return INITIAL_USERS;
     }
