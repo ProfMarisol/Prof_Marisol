@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taller Interactivo de Geometría - AulaVirtual</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .header-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4338ca;
+      background: #eef2ff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin-bottom: 8px;
+    }
+    p {
+      color: #475569;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .canvas-wrapper {
+      position: relative;
+      background: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 380px;
+      cursor: crosshair;
+    }
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+    }
+    .instructions {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      color: #166534;
+      margin-bottom: 20px;
+    }
+    .instructions strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #14532d;
+    }
+    .footer-note {
+      font-size: 13px;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="header-badge">Página HTML Externa Subida por el Profesor</span>
+    <h1>Simulador Interactivo de Triángulos y Ángulos</h1>
+    <p>Arrastra cualquiera de los 3 vértices coloreados con el ratón o el dedo táctil para modificar el triángulo en tiempo real y comprobar cómo la suma de sus ángulos interiores siempre se mantiene constante en 180°.</p>
+
+    <div class="instructions">
+      <strong>💡 Experimento para los alumnos:</strong>
+      Intenta formar un triángulo rectángulo (donde uno de los ángulos sea exactamente 90°), un triángulo equilátero (tres lados iguales con ángulos de 60°) y un triángulo obtusángulo.
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="geometryCanvas" width="800" height="380"></canvas>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Ángulo A (Rojo)</div>
+        <div class="stat-value" id="valA">0°</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ángulo B (Azul)</div>
+        <div class="stat-value" id="valB">0°</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ángulo C (Verde)</div>
+        <div class="stat-value" id="valC">0°</div>
+      </div>
+      <div class="stat-card" style="border-color: #c7d2fe; background: #eef2ff;">
+        <div class="stat-label" style="color: #4338ca;">Suma Total</div>
+        <div class="stat-value" style="color: #3730a3;" id="valSum">180°</div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span>Archivo de muestra: <code>public/ejercicios/geometria-interactiva.html</code></span>
+      <span>Listo para GitHub Pages</span>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('geometryCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const points = [
+      { x: 180, y: 300, color: '#ef4444', label: 'A' },
+      { x: 620, y: 300, color: '#3b82f6', label: 'B' },
+      { x: 380, y: 90,  color: '#10b981', label: 'C' }
+    ];
+
+    let dragIndex = -1;
+    const radius = 14;
+
+    function getMousePos(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = evt.clientX || (evt.touches && evt.touches[0].clientX);
+      const clientY = evt.clientY || (evt.touches && evt.touches[0].clientY);
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function distance(p1, p2) {
+      return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    }
+
+    function calculateAngles() {
+      const a = distance(points[1], points[2]); // opuesto a A (BC)
+      const b = distance(points[0], points[2]); // opuesto a B (AC)
+      const c = distance(points[0], points[1]); // opuesto a C (AB)
+
+      // Ley de cosenos
+      const radA = Math.acos(Math.max(-1, Math.min(1, (b*b + c*c - a*a) / (2 * b * c))));
+      const radB = Math.acos(Math.max(-1, Math.min(1, (a*a + c*c - b*b) / (2 * a * c))));
+      const radC = Math.PI - radA - radB;
+
+      const degA = Math.round(radA * 180 / Math.PI);
+      const degB = Math.round(radB * 180 / Math.PI);
+      const degC = 180 - degA - degB;
+
+      document.getElementById('valA').innerText = degA + '°';
+      document.getElementById('valB').innerText = degB + '°';
+      document.getElementById('valC').innerText = degC + '°';
+      document.getElementById('valSum').innerText = (degA + degB + degC) + '°';
+
+      return { degA, degB, degC };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Grid background lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Draw triangle fill
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.12)';
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      ctx.lineTo(points[1].x, points[1].y);
+      ctx.lineTo(points[2].x, points[2].y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw triangle edges
+      ctx.strokeStyle = '#4f46e5';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Draw vertices
+      points.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.label, p.x, p.y);
+      });
+
+      calculateAngles();
+    }
+
+    function handleStart(evt) {
+      const pos = getMousePos(evt);
+      points.forEach((p, idx) => {
+        if (Math.hypot(p.x - pos.x, p.y - pos.y) <= radius * 1.8) {
+          dragIndex = idx;
+        }
+      });
+    }
+
+    function handleMove(evt) {
+      if (dragIndex === -1) return;
+      const pos = getMousePos(evt);
+      points[dragIndex].x = Math.max(20, Math.min(canvas.width - 20, pos.x));
+      points[dragIndex].y = Math.max(20, Math.min(canvas.height - 20, pos.y));
+      draw();
+      evt.preventDefault();
+    }
+
+    function handleEnd() {
+      dragIndex = -1;
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+    draw();
+  </script>
+</body>
+</html>
