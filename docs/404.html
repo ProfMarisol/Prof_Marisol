@@ -3,20 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>AulaVirtual</title>
-    <script type="text/javascript">
-      // GitHub Pages SPA redirect
-      var pathSegmentsToKeep = 1;
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
-    </script>
   </head>
-  <body>
-    <p>Redirigiendo a AulaVirtual...</p>
+  <body style="font-family: system-ui, sans-serif; text-align: center; padding: 60px 20px; color: #334155; background: #f8fafc;">
+    <h2 style="font-size: 24px; font-weight: bold; color: #0f172a;">AulaVirtual</h2>
+    <p style="margin-top: 12px; color: #64748b;">La página solicitada no está disponible o ha sido movida.</p>
+    <p style="margin-top: 20px;">
+      <a href="./" style="display: inline-block; padding: 10px 20px; background: #4f46e5; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        Volver a la página principal
+      </a>
+    </p>
   </body>
 </html>
