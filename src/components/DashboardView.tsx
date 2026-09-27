@@ -8,7 +8,7 @@ import {
   BookOpen, PlusCircle, Search, Clock, Award, 
   CheckCircle2, ArrowRight, Edit3, Trash2, Download, Upload, 
   Sparkles, Layers, GraduationCap, FileCode, Check, RotateCcw,
-  ShieldCheck, UserPlus, Users, Github
+  ShieldCheck, UserPlus, Users, Github, Globe, Lock, Eye, EyeOff
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -32,14 +32,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [moduleToDelete, setModuleToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isResettingModal, setIsResettingModal] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
+  // Visibility counts
+  const publishedCount = modules.filter(m => m.isPublished !== false).length;
+  const draftCount = modules.filter(m => m.isPublished === false).length;
+  const visibleModulesForStudent = modules.filter(m => m.isPublished !== false);
+
   // Filter modules
   const filteredModules = modules.filter(m => {
+    // If student, ONLY show published modules
+    if (!isTeacher && m.isPublished === false) {
+      return false;
+    }
+
+    // Teacher visibility filter
+    if (isTeacher) {
+      if (visibilityFilter === 'published' && m.isPublished === false) return false;
+      if (visibilityFilter === 'draft' && m.isPublished !== false) return false;
+    }
+
     const matchesSearch = 
       m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       m.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -56,6 +73,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     : 0;
 
   // Handlers for teacher
+  const handleTogglePublish = (moduleId: string, moduleTitle: string) => {
+    const isNowPublished = storageService.toggleModulePublish(moduleId);
+    onRefreshData();
+    if (isNowPublished) {
+      setToastMessage(`✅ "${moduleTitle}" ahora está PUBLICADA y visible para todos los alumnos.`);
+    } else {
+      setToastMessage(`🔒 "${moduleTitle}" se ha guardado como BORRADOR (oculta para alumnos).`);
+    }
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   const confirmDeleteModule = () => {
     if (!moduleToDelete) return;
     const title = moduleToDelete.title;
@@ -213,11 +241,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {isTeacher ? (
           <>
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
-              <div className="text-xs font-medium text-slate-500">Páginas de Ejercicios</div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-medium text-slate-500">Páginas de Ejercicios</div>
+                <Layers className="w-3.5 h-3.5 text-slate-400" />
+              </div>
               <div className="text-2xl font-bold text-slate-900 mt-1 font-mono tabular-nums">
                 {modules.length}
               </div>
-              <div className="text-xs text-slate-400 mt-1">Disponibles para alumnos</div>
+              <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 flex-wrap">
+                <span className="text-emerald-700 font-semibold">{publishedCount} visibles</span>
+                <span>·</span>
+                <span className="text-amber-700 font-semibold">{draftCount} ocultas</span>
+              </div>
             </div>
 
             <div 
@@ -276,9 +311,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
               <div className="text-xs font-medium text-slate-500">Módulos Activos</div>
               <div className="text-2xl font-bold text-slate-900 mt-1 font-mono tabular-nums">
-                {modules.length}
+                {visibleModulesForStudent.length}
               </div>
-              <div className="text-xs text-slate-400 mt-1">Para tu curso</div>
+              <div className="text-xs text-slate-400 mt-1">Disponibles ahora</div>
             </div>
 
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
@@ -292,7 +327,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
               <div className="text-xs font-medium text-slate-500">Pendientes</div>
               <div className="text-2xl font-bold text-amber-600 mt-1 font-mono tabular-nums">
-                {Math.max(0, modules.length - completedModuleIds.size)}
+                {Math.max(0, visibleModulesForStudent.length - completedModuleIds.size)}
               </div>
               <div className="text-xs text-slate-400 mt-1">Por realizar</div>
             </div>
@@ -380,21 +415,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Category tabs (Interactive segmented controls as allowed by Section 1.A) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-          {subjects.map(subj => (
-            <button
-              key={subj}
-              onClick={() => setSelectedSubject(subj)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-                selectedSubject === subj
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80'
-              }`}
-            >
-              {subj === 'all' ? 'Todas las Materias' : subj}
-            </button>
-          ))}
+        {/* Category tabs and Teacher Visibility Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            {subjects.map(subj => (
+              <button
+                key={subj}
+                onClick={() => setSelectedSubject(subj)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
+                  selectedSubject === subj
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80'
+                }`}
+              >
+                {subj === 'all' ? 'Todas las Materias' : subj}
+              </button>
+            ))}
+          </div>
+
+          {isTeacher && (
+            <div className="inline-flex items-center bg-slate-100 p-1 rounded-lg text-xs self-start sm:self-auto border border-slate-200/70 shrink-0">
+              <button
+                type="button"
+                onClick={() => setVisibilityFilter('all')}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                  visibilityFilter === 'all' 
+                    ? 'bg-white text-slate-900 shadow-xs' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Todos ({modules.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibilityFilter('published')}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${
+                  visibilityFilter === 'published' 
+                    ? 'bg-white text-emerald-700 shadow-xs' 
+                    : 'text-slate-600 hover:text-emerald-700'
+                }`}
+              >
+                <Globe className="w-3 h-3 text-emerald-600" />
+                <span>Visibles ({publishedCount})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibilityFilter('draft')}
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors flex items-center gap-1 ${
+                  visibilityFilter === 'draft' 
+                    ? 'bg-white text-amber-700 shadow-xs' 
+                    : 'text-slate-600 hover:text-amber-700'
+                }`}
+              >
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Ocultos ({draftCount})</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -404,7 +481,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-semibold text-slate-800">No se encontraron páginas</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            No hay ejercicios que coincidan con la búsqueda. Prueba seleccionando otra categoría o crea uno nuevo.
+            {isTeacher && visibilityFilter === 'draft'
+              ? 'No tienes ningún ejercicio en borrador. Todos los ejercicios están visibles para los alumnos.'
+              : 'No hay ejercicios que coincidan con la búsqueda. Prueba seleccionando otra categoría o crea uno nuevo.'}
           </p>
           {isTeacher && (
             <button
@@ -421,25 +500,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {filteredModules.map((module) => {
             const submission = studentSubmissions.find(s => s.moduleId === module.id);
             const isCompleted = !!submission;
+            const isPub = module.isPublished !== false;
 
             return (
               <div
                 key={module.id}
-                className="bg-white rounded-xl border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between overflow-hidden group"
+                className={`rounded-xl border shadow-xs transition-all flex flex-col justify-between overflow-hidden group ${
+                  isTeacher && !isPub 
+                    ? 'bg-amber-50/20 border-amber-200/80 hover:border-amber-300' 
+                    : 'bg-white border-slate-200/90 hover:border-slate-300'
+                }`}
               >
                 <div className="p-5">
-                  {/* Clean unboxed metadata with typographic separators (anti-slop rule Section 1.A) */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-2">
-                    <span className="font-semibold text-indigo-700">{module.subject}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="capitalize">{module.difficulty}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{module.estimatedMinutes} min</span>
-                    {(module.htmlContent || module.externalUrl) && (
-                      <>
-                        <span aria-hidden="true">·</span>
-                        <span className="text-teal-700 font-semibold">HTML Interactivo</span>
-                      </>
+                  {/* Metadata and Publication badge */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap">
+                      <span className="font-semibold text-indigo-700">{module.subject}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="capitalize">{module.difficulty}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{module.estimatedMinutes} min</span>
+                      {(module.htmlContent || module.externalUrl) && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-teal-700 font-semibold">HTML</span>
+                        </>
+                      )}
+                    </div>
+
+                    {isTeacher && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 shrink-0 ${
+                        isPub 
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80' 
+                          : 'bg-amber-100 text-amber-900 border border-amber-300/80'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isPub ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                        <span>{isPub ? 'Visible' : 'Oculto'}</span>
+                      </span>
                     )}
                   </div>
 
@@ -448,7 +545,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </h3>
 
                   <p className="text-xs text-slate-600 mt-2 line-clamp-2 leading-relaxed">
-                    {module.description}
+                    {module.description || 'Página de actividades didácticas.'}
                   </p>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -471,6 +568,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </span>
                     )}
                   </div>
+
+                  {/* Teacher Quick Publication Action Button */}
+                  {isTeacher && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500">
+                        {isPub ? 'Visible para los alumnos' : 'Oculto (en preparación)'}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublish(module.id, module.title)}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                          isPub
+                            ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        }`}
+                        title={isPub ? 'Clic para ocultar a los alumnos' : 'Clic para publicar y dar acceso a los alumnos'}
+                      >
+                        {isPub ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Publicado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Globe className="w-3.5 h-3.5" />
+                            <span>Publicar ahora</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card footer actions */}

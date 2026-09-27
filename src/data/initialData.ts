@@ -18,6 +18,14 @@ export const INITIAL_USERS: User[] = [
     gradeGroup: 'Docente Titular',
   },
   {
+    id: 'user-teacher-1790522402131',
+    username: 'maria',
+    password: 'profe123',
+    name: 'Marisol Delgado',
+    role: 'teacher',
+    gradeGroup: 'Sage 50',
+  },
+  {
     id: 'user-student-1',
     username: 'alumno1',
     password: 'alumno123',

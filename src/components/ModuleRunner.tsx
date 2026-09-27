@@ -6,7 +6,7 @@ import { githubSyncService } from '../services/githubSync';
 import { HtmlExerciseViewer } from './HtmlExerciseViewer';
 import { 
   ArrowLeft, CheckCircle2, XCircle, HelpCircle, 
-  RotateCcw, Award, Lightbulb, ExternalLink, BookOpen, Send, Download, FileText
+  RotateCcw, Award, Lightbulb, ExternalLink, BookOpen, Send, Download, FileText, Lock
 } from 'lucide-react';
 
 interface ModuleRunnerProps {
@@ -32,6 +32,27 @@ export const ModuleRunner: React.FC<ModuleRunnerProps> = ({
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
         >
           Volver al panel principal
+        </button>
+      </div>
+    );
+  }
+
+  // Prevent student access if module is unpublished / in draft
+  if (currentUser.role === 'student' && module.isPublished === false) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-20 text-center">
+        <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-200 shadow-xs">
+          <Lock className="w-7 h-7" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">Actividad aún no publicada</h2>
+        <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+          Esta página de ejercicios está en modo borrador y aún no ha sido abierta por el profesor para los alumnos.
+        </p>
+        <button
+          onClick={() => onNavigate({ type: 'dashboard' })}
+          className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+        >
+          Volver a mis actividades
         </button>
       </div>
     );

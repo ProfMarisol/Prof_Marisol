@@ -8,7 +8,8 @@ import { HtmlExerciseViewer } from './HtmlExerciseViewer';
 import { 
   ArrowLeft, Plus, Trash2, Save, Eye, Layers, 
   HelpCircle, CheckCircle, Info, ExternalLink, Sparkles, Check,
-  Upload, Maximize2, FileCode, Paperclip, X, Github, RefreshCw, Download
+  Upload, Maximize2, FileCode, Paperclip, X, Github, RefreshCw, Download,
+  Globe, Lock
 } from 'lucide-react';
 
 interface ModuleEditorProps {
@@ -41,6 +42,7 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
   const [fullScreenPreviewActive, setFullScreenPreviewActive] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isPublished, setIsPublished] = useState<boolean>(existingModule?.isPublished !== false);
   
   const [exercises, setExercises] = useState<ExerciseItem[]>(
     existingModule?.exercises || [
@@ -174,7 +176,7 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
       description: description.trim(),
       estimatedMinutes: Number(estimatedMinutes) || 15,
       difficulty,
-      isPublished: true,
+      isPublished,
       author: currentUser.name,
       createdAt: existingModule?.createdAt || new Date().toISOString().split('T')[0],
       theoryMarkdown: theoryMarkdown.trim(),
@@ -331,6 +333,56 @@ export const ModuleEditor: React.FC<ModuleEditorProps> = ({
                 placeholder="Breve resumen de los contenidos y competencias a evaluar..."
                 className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
               />
+            </div>
+
+            {/* Publication and Visibility control */}
+            <div className="sm:col-span-2 p-4 bg-slate-50/80 border border-slate-200 rounded-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    isPublished ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {isPublished ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <span>Publicar acceso a los alumnos</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isPublished ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                      }`}>
+                        {isPublished ? 'Visible para alumnos' : 'Oculto / Borrador'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {isPublished 
+                        ? 'Los alumnos podrán ver esta actividad en su panel y resolver los ejercicios.' 
+                        : 'Solo tú (profesor) podrás ver esta actividad. Los alumnos no tendrán acceso hasta que la actives.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPublished(!isPublished)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-colors flex items-center gap-2 ${
+                    isPublished 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs' 
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+                  }`}
+                >
+                  {isPublished ? (
+                    <>
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>Publicado (Visible)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Oculto (Borrador)</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="sm:col-span-2 border-t border-slate-100 pt-4 mt-1">

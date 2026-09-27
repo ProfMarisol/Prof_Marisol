@@ -106,7 +106,13 @@ export const storageService = {
     try {
       const stored = safeGet(STORAGE_KEYS.MODULES);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.map((m: any) => ({
+            ...m,
+            isPublished: m.isPublished !== false,
+          }));
+        }
       }
       this.saveModules(INITIAL_MODULES);
       return INITIAL_MODULES;
@@ -142,6 +148,23 @@ export const storageService = {
   deleteModule(id: string): void {
     const modules = this.getModules().filter(m => m.id !== id);
     this.saveModules(modules);
+  },
+
+  toggleModulePublish(id: string): boolean {
+    const modules = this.getModules();
+    const index = modules.findIndex(m => m.id === id);
+    if (index >= 0) {
+      const current = modules[index].isPublished !== false;
+      const newState = !current;
+      modules[index] = {
+        ...modules[index],
+        isPublished: newState,
+        updatedAt: new Date().toISOString(),
+      };
+      this.saveModules(modules);
+      return newState;
+    }
+    return false;
   },
 
   // Submissions
