@@ -62,10 +62,30 @@ export interface StudentSubmission {
   feedback?: string;
 }
 
+export interface GitHubSyncConfig {
+  owner: string;
+  repo: string;
+  branch: string;
+  filePath: string;
+  token?: string;
+  autoSync: boolean;
+  lastSyncedAt?: string;
+}
+
+export interface AppDatabasePayload {
+  app: string;
+  version: string;
+  lastUpdated: string;
+  users: User[];
+  modules: ModulePage[];
+  submissions: StudentSubmission[];
+}
+
 export type ViewState = 
   | { type: 'dashboard' }
   | { type: 'module-runner'; moduleId: string }
   | { type: 'module-editor'; moduleId?: string }
   | { type: 'submissions' }
   | { type: 'students-manager' }
-  | { type: 'teachers-manager' };
+  | { type: 'teachers-manager' }
+  | { type: 'github-sync' };

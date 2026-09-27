@@ -14,11 +14,23 @@ import { ModuleEditor } from './components/ModuleEditor';
 import { SubmissionsView } from './components/SubmissionsView';
 import { StudentsManager } from './components/StudentsManager';
 import { TeachersManager } from './components/TeachersManager';
+import { githubSyncService } from './services/githubSync';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => storageService.getCurrentUser());
   const [currentView, setCurrentView] = useState<ViewState>({ type: 'dashboard' });
   const [dataVersion, setDataVersion] = useState<number>(0);
+
+  // Attempt to sync latest data from GitHub on mount (multi-computer support)
+  useEffect(() => {
+    githubSyncService.pullFromGitHub().then(res => {
+      if (res.success) {
+        setDataVersion(v => v + 1);
+      }
+    }).catch(() => {
+      // Quiet fallback
+    });
+  }, []);
 
   // Sync hash with current view for deep linking and GitHub Pages navigation
   useEffect(() => {

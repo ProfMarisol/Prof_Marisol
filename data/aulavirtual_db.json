@@ -1,0 +1,99 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-09-27T10:00:00.000Z",
+  "users": [
+    {
+      "id": "user-admin",
+      "username": "admin",
+      "password": "nimda",
+      "name": "Administrador Principal",
+      "role": "teacher",
+      "gradeGroup": "Administración del Centro"
+    },
+    {
+      "id": "user-teacher-1",
+      "username": "profesor",
+      "password": "profe123",
+      "name": "Prof. Daniel Alarcón",
+      "role": "teacher",
+      "gradeGroup": "Docente Titular"
+    },
+    {
+      "id": "user-student-1",
+      "username": "alumno1",
+      "password": "alumno123",
+      "name": "Sofía Martínez",
+      "role": "student",
+      "gradeGroup": "3º ESO - Grupo A"
+    },
+    {
+      "id": "user-student-2",
+      "username": "alumno2",
+      "password": "alumno123",
+      "name": "Mateo Gómez",
+      "role": "student",
+      "gradeGroup": "3º ESO - Grupo A"
+    },
+    {
+      "id": "user-student-3",
+      "username": "alumno3",
+      "password": "alumno123",
+      "name": "Lucía Fernández",
+      "role": "student",
+      "gradeGroup": "3º ESO - Grupo B"
+    }
+  ],
+  "modules": [
+    {
+      "id": "mod-mates-1",
+      "title": "Desafíos Matemáticos: Álgebra y Lógica Operativa",
+      "slug": "desafios-matematicos-algebra",
+      "subject": "Matemáticas",
+      "description": "Ejercicios interactivos sobre jerarquía de operaciones, resolución de ecuaciones de primer grado y cálculo de probabilidades.",
+      "estimatedMinutes": 20,
+      "difficulty": "intermedio",
+      "isPublished": true,
+      "author": "Prof. Daniel Alarcón",
+      "createdAt": "2026-09-20",
+      "theoryMarkdown": "### 📌 Fundamentos Teóricos Clave\n\n1. **Jerarquía de las Operaciones (PEMDAS)**:\n   - Paréntesis y corchetes primero.\n   - Exponentes y potencias.\n   - Multiplicaciones y Divisiones (de izquierda a derecha).\n   - Sumas y Restas (de izquierda a derecha).\n\n2. **Ecuaciones de Primer Grado**:\n   - Todo término que suma pasa restando al otro miembro.\n   - Todo factor multiplicativo no nulo pasa dividiendo al miembro opuesto.",
+      "exercises": [
+        {
+          "id": "ex-m1-1",
+          "type": "multiple-choice",
+          "prompt": "¿Cuál es el resultado de la operación combinada: 12 + 4 × (8 - 3) ÷ 2?",
+          "instructions": "Aplica estrictamente el orden de jerarquía de operaciones.",
+          "options": [
+            "17",
+            "22",
+            "40",
+            "28"
+          ],
+          "correctAnswer": 1,
+          "points": 2,
+          "hint": "Primero resuelve el paréntesis (8 - 3) = 5. Luego la multiplicación 4 × 5 = 20...",
+          "explanation": "Paso 1: Paréntesis (8 - 3) = 5. Paso 2: Multiplicación 4 × 5 = 20. Paso 3: División 20 ÷ 2 = 10. Paso 4: Suma 12 + 10 = 22."
+        },
+        {
+          "id": "ex-m1-2",
+          "type": "short-answer",
+          "prompt": "Resuelve la ecuación lineal: 3x - 7 = 14. Escribe únicamente el valor numérico de x.",
+          "instructions": "Despeja la incógnita paso a paso.",
+          "correctAnswer": "7",
+          "points": 2,
+          "hint": "Pasa el -7 sumando al miembro derecho: 3x = 14 + 7 = 21.",
+          "explanation": "3x = 14 + 7 => 3x = 21 => x = 21 / 3 => x = 7."
+        },
+        {
+          "id": "ex-m1-3",
+          "type": "true-false",
+          "prompt": "¿La suma de los tres ángulos internos de cualquier triángulo plano euclidiano siempre es igual a 180 grados?",
+          "correctAnswer": "true",
+          "points": 2,
+          "hint": "Piensa en el postulado fundamental de la geometría euclidiana sobre polígonos de 3 lados.",
+          "explanation": "Verdadero. En geometría euclidiana plana, la suma de los ángulos de todo triángulo es invariablemente 180° (o π radianes)."
+        }
+      ]
+    }
+  ],
+  "submissions": []
+}

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ModulePage, User, StudentSubmission, ViewState } from '../types';
 import { storageService } from '../services/storage';
+import { generateSubmissionPDF } from '../services/pdfGenerator';
+import { githubSyncService } from '../services/githubSync';
 import { HtmlExerciseViewer } from './HtmlExerciseViewer';
 import { 
   ArrowLeft, CheckCircle2, XCircle, HelpCircle, 
-  RotateCcw, Award, Lightbulb, ExternalLink, BookOpen, Send
+  RotateCcw, Award, Lightbulb, ExternalLink, BookOpen, Send, Download, FileText
 } from 'lucide-react';
 
 interface ModuleRunnerProps {
@@ -43,6 +45,7 @@ export const ModuleRunner: React.FC<ModuleRunnerProps> = ({
     currentSubmission ? currentSubmission.answers : {}
   );
   const [isSubmitted, setIsSubmitted] = useState<boolean>(!!currentSubmission);
+  const [lastSubmission, setLastSubmission] = useState<StudentSubmission | null>(currentSubmission || null);
   const [showHints, setShowHints] = useState<Record<string, boolean>>({});
   const [resultScore, setResultScore] = useState<number>(currentSubmission ? currentSubmission.score : 0);
   const [resultPercentage, setResultPercentage] = useState<number>(currentSubmission ? currentSubmission.percentage : 0);
@@ -119,7 +122,11 @@ export const ModuleRunner: React.FC<ModuleRunnerProps> = ({
         : 'Te sugerimos repasar la teoría y volver a intentarlo.',
     };
 
+    setLastSubmission(newSubmission);
     storageService.addSubmission(newSubmission);
+
+    // If GitHub sync is configured with token, save student submission in their GitHub folder
+    githubSyncService.saveStudentSubmissionToGitHub(newSubmission, currentUser, module);
   };
 
   const handleRetry = () => {
@@ -247,13 +254,30 @@ export const ModuleRunner: React.FC<ModuleRunnerProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={handleRetry}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Reintentar actividad</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const subToDownload = lastSubmission || currentSubmission;
+                if (subToDownload) {
+                  generateSubmissionPDF(module, subToDownload, currentUser);
+                }
+              }}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+              title="Descargar justificante oficial en PDF con tus respuestas y nota"
+            >
+              <Download className="w-4 h-4" />
+              <span>Descargar Comprobante en PDF</span>
+            </button>
+
+            <button
+              onClick={handleRetry}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Reintentar</span>
+            </button>
+          </div>
         </div>
       )}
 

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { User, ViewState } from '../types';
 import { storageService } from '../services/storage';
 import { ConfirmModal } from './ConfirmModal';
+import { GitHubSyncModal } from './GitHubSyncModal';
 import { 
   ArrowLeft, ShieldCheck, UserPlus, Users, Key, Download, 
-  Trash2, CheckCircle2, AlertCircle, Sparkles, BookOpen 
+  Trash2, CheckCircle2, AlertCircle, Sparkles, BookOpen, Github, RefreshCw
 } from 'lucide-react';
 
 interface TeachersManagerProps {
@@ -18,6 +19,7 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
 }) => {
   const [users, setUsers] = useState<User[]>(storageService.getUsers());
   const teachers = users.filter(u => u.role === 'teacher');
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   const [newName, setNewName] = useState('');
   const [newUsername, setNewUsername] = useState('');
@@ -147,12 +149,46 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
           </p>
         </div>
 
+        <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setIsSyncModalOpen(true)}
+            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-xs"
+            title="Sincronizar y guardar usuarios, profesores y contraseñas en GitHub"
+          >
+            <Github className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Sincronizar con GitHub</span>
+          </button>
+
+          <button
+            onClick={handleDownloadTeacherRoster}
+            className="px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-medium rounded-lg transition-colors flex items-center gap-2 shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Exportar CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Cloud Persistence in GitHub Banner */}
+      <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-900 text-white rounded-lg shrink-0">
+            <Github className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900">Almacenamiento Multi-Ordenador en GitHub:</div>
+            <p className="text-slate-600 text-[11px] mt-0.5">
+              Guarda tus profesores, alumnos, contraseñas y entregas directamente en tu repositorio para no perderlos y acceder desde cualquier ordenador.
+            </p>
+          </div>
+        </div>
+
         <button
-          onClick={handleDownloadTeacherRoster}
-          className="px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-medium rounded-lg transition-colors flex items-center gap-2 shadow-xs shrink-0 self-start sm:self-auto"
+          onClick={() => setIsSyncModalOpen(true)}
+          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 shrink-0 self-start sm:self-auto shadow-xs"
         >
-          <Download className="w-3.5 h-3.5" />
-          <span>Exportar Plantilla Docente (CSV)</span>
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Configurar / Guardar en GitHub</span>
         </button>
       </div>
 
@@ -357,6 +393,12 @@ export const TeachersManager: React.FC<TeachersManagerProps> = ({
         isDestructive={true}
         onConfirm={confirmDeleteTeacher}
         onCancel={() => setTeacherToDelete(null)}
+      />
+      {/* GitHub Sync & Cloud Persistence Modal */}
+      <GitHubSyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onDataUpdated={() => setUsers(storageService.getUsers())}
       />
     </div>
   );
