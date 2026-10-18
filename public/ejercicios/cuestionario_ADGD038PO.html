@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuestionario de conocimientos previos – ADGD038PO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--azul:#1d4ed8;--verde:#15803d;--rojo:#b91c1c;--gris:#f3f4f6}
+*{box-sizing:border-box}
+body{font-family:Segoe UI,Arial,sans-serif;background:#eef2ff;margin:0;padding:20px;color:#111827}
+.card{max-width:900px;margin:auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+h1{color:var(--azul);font-size:1.5rem;margin:0 0 4px}
+.sub{color:#4b5563;margin-bottom:18px}
+.datos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+label{font-size:.85rem;font-weight:600;display:block;margin-bottom:4px}
+input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:1rem}
+button{border:none;border-radius:10px;padding:12px 18px;font-size:1rem;font-weight:700;cursor:pointer}
+.btn-azul{background:var(--azul);color:#fff}
+.btn-azul:hover{background:#1e40af}
+.btn-sec{background:#e5e7eb;color:#111827}
+.pregunta{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:14px 0;background:var(--gris)}
+.pregunta p{font-weight:700;margin:0 0 10px}
+.opcion{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:10px;margin:8px 0;cursor:pointer}
+.opcion:hover{border-color:var(--azul)}
+.correcta{border-color:var(--verde)!important;background:#dcfce7!important}
+.incorrecta{border-color:var(--rojo)!important;background:#fee2e2!important}
+.feedback{font-weight:700;margin-top:8px}
+.timer{position:sticky;top:10px;z-index:5;display:flex;justify-content:space-between;align-items:center;background:#fff;border:2px solid var(--azul);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+#reloj{font-size:1.4rem;font-weight:800;color:var(--azul)}
+#barra{height:8px;background:#e5e7eb;border-radius:99px;margin-top:8px}
+#progreso{height:100%;width:0%;background:var(--azul);border-radius:99px;transition:width .3s}
+.oculto{display:none}
+#resultado{border:2px solid var(--azul);border-radius:12px;padding:18px;margin-top:18px}
+@media print{.timer,button{display:none!important}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Cuestionario de conocimientos previos</h1>
+<div class="sub">Curso: <strong>ADGD038PO – Contabilidad de Costes</strong><br>
+Marca la opción correcta. Este cuestionario sirve para conocer tus conocimientos previos antes de comenzar el curso; no cuenta como examen.</div>
+
+<div class="datos">
+<div><label for="nombre">Nombre</label><input id="nombre" placeholder="Nombre"></div>
+<div><label for="apellido1">Primer apellido</label><input id="apellido1" placeholder="Primer apellido"></div>
+<div><label for="apellido2">Segundo apellido</label><input id="apellido2" placeholder="Segundo apellido"></div>
+</div>
+<div class="datos" style="grid-template-columns:1fr">
+<div><label for="fecha">Fecha</label><input id="fecha" type="date"></div>
+</div>
+
+<div class="timer oculto" id="timerBox">
+<div><strong>Tiempo restante:</strong> <span id="reloj">20</span> s</div>
+<div><strong>Pregunta:</strong> <span id="contador">1</span> / 20</div>
+</div>
+<div id="barra" class="oculto"><div id="progreso"></div></div>
+
+<div id="cuestionario"></div>
+
+<div style="text-align:center;margin-top:18px">
+<button class="btn-azul" id="btnEmpezar">Empezar cuestionario</button>
+<button class="btn-sec oculto" id="btnDescargar">Descargar resultados en PDF</button>
+<button class="btn-sec oculto" id="btnRepetir">Repetir cuestionario</button>
+</div>
+
+<div id="resultado" class="oculto"></div>
+</div>
+
+<script>
+const preguntas=[
+["¿Qué es la contabilidad?",["Una técnica para registrar y resumir la información económica de una empresa.","Una herramienta exclusivamente para calcular impuestos.","Un programa informático de ventas."],0],
+["¿Cuál es el objetivo principal de la contabilidad de costes?",["Determinar el importe del IVA a ingresar.","Conocer y controlar los costes de los productos, servicios o actividades.","Elaborar la declaración de la renta de los socios."],1],
+["¿Qué es el patrimonio de una empresa?",["El conjunto de bienes, derechos y obligaciones de la empresa.","Solo el dinero que tiene en el banco.","El beneficio obtenido durante el año."],0],
+["¿Qué son los activos?",["Las deudas y obligaciones de la empresa.","Los bienes y derechos controlados por la empresa.","Los gastos del ejercicio."],1],
+["¿Qué son los pasivos?",["Las obligaciones o deudas de la empresa.","Los ingresos obtenidos por ventas.","Los bienes inmuebles de la empresa."],0],
+["¿Qué representa el patrimonio neto?",["La diferencia entre activos y pasivos.","El total de las deudas a corto plazo.","El importe de las compras realizadas."],0],
+["¿Qué es un gasto?",["Una disminución de patrimonio derivada de la actividad de la empresa.","Un derecho de cobro frente a un cliente.","Una deuda con un proveedor."],0],
+["¿Qué es un ingreso?",["Una obligación de pago.","Un aumento de patrimonio derivado de la actividad de la empresa.","Una compra de mercaderías."],1],
+["¿Qué es un coste?",["El valor de los recursos consumidos para obtener un producto o servicio.","El precio de venta al cliente.","El beneficio obtenido en una operación."],0],
+["¿Cuál es la diferencia entre coste y gasto?",["Son exactamente lo mismo.","El coste se relaciona con la producción o prestación del servicio; el gasto se imputa al periodo en que se consume.","El gasto siempre es mayor que el coste."],1],
+["¿Cuál de los siguientes es un coste directo en una fábrica de muebles?",["La madera utilizada para fabricar una mesa.","El alquiler de las oficinas administrativas.","La publicidad de la empresa."],0],
+["¿Cuál de los siguientes es un coste indirecto?",["La tela empleada para fabricar un sofá.","El salario del operario que ensambla una silla.","La electricidad de la fábrica, consumida por varios productos."],2],
+["¿Qué son los costes fijos?",["Los que cambian según el volumen de producción.","Los que se mantienen estables en un periodo, aunque varíe la producción.","Los que solo existen cuando se vende el producto."],1],
+["¿Qué son los costes variables?",["Los que aumentan o disminuyen según el nivel de actividad o producción.","Los que no dependen de la producción.","Los costes de administración exclusivamente."],0],
+["Si una empresa produce más unidades, ¿qué ocurre normalmente con el coste variable total?",["Disminuye.","Permanece igual.","Aumenta."],2],
+["¿Qué son las existencias?",["Los bienes adquiridos o producidos por la empresa para su venta, transformación o uso.","Las deudas con los proveedores.","Los ingresos pendientes de cobro."],0],
+["¿Qué es el coste de producción?",["El precio al que se vende el producto.","El conjunto de costes necesarios para fabricar un producto.","El beneficio obtenido por la empresa."],1],
+["¿Qué significa “margen” en una venta?",["La diferencia entre el precio de venta y el coste del producto o servicio.","El importe total de las compras.","El IVA soportado."],0],
+["¿Para qué sirve el Plan General Contable (PGC)?",["Para establecer normas y criterios contables uniformes en España.","Para fijar los precios de venta de las empresas.","Para calcular exclusivamente el IRPF."],0],
+["¿Cuál de estas afirmaciones es correcta?",["La contabilidad de costes solo sirve para preparar las cuentas anuales.","La contabilidad de costes ayuda a la empresa a controlar recursos y tomar decisiones.","La contabilidad de costes no utiliza información de la contabilidad general."],1]
+];
+let orden=[],actual=0,respuestas=[],tiempo=20,intervalo=null,terminado=false;
+const letras=["A","B","C"];
+const $=id=>document.getElementById(id);
+
+function tono(freq,dur,tipo="sine",vol=.15){
+ try{const c=new (window.AudioContext||window.webkitAudioContext)();
+ const o=c.createOscillator(),g=c.createGain();
+ o.type=tipo;o.frequency.value=freq;o.connect(g);g.connect(c.destination);
+ g.gain.setValueAtTime(vol,c.currentTime);
+ g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+ o.start();o.stop(c.currentTime+dur);}catch(e){}
+}
+const sonidoOk=()=>{tono(660,.12);setTimeout(()=>tono(880,.18),120)};
+const sonidoMal=()=>{tono(220,.25,"square",.12)};
+const sonidoFin=()=>{[523,659,784].forEach((f,i)=>setTimeout(()=>tono(f,.18),i*150))};
+
+function barajar(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
+
+function iniciar(){
+ const n=$("nombre").value.trim(),a1=$("apellido1").value.trim(),a2=$("apellido2").value.trim();
+ if(!n||!a1||!a2){alert("Por favor, completa nombre y los dos apellidos.");return}
+ orden=barajar(preguntas.map((_,i)=>i));
+ actual=0;respuestas=[];terminado=false;
+ $("resultado").classList.add("oculto");
+ $("btnDescargar").classList.add("oculto");
+ $("btnRepetir").classList.add("oculto");
+ $("btnEmpezar").classList.add("oculto");
+ $("timerBox").classList.remove("oculto");
+ $("barra").classList.remove("oculto");
+ mostrarPregunta();
+}
+
+function mostrarPregunta(){
+ clearInterval(intervalo);tiempo=20;
+ const i=orden[actual],p=preguntas[i];
+ const opciones=barajar([0,1,2]);
+ $("contador").textContent=actual+1;
+ $("progreso").style.width=(actual/preguntas.length*100)+"%";
+ $("cuestionario").innerHTML=`
+ <div class="pregunta">
+ <p>${actual+1}. ${p[0]}</p>
+ ${opciones.map(o=>`<div class="opcion" data-o="${o}"><strong>${letras[o]})</strong><span>${p[1][o]}</span></div>`).join("")}
+ <div class="feedback" id="feedback"></div>
+ </div>`;
+ document.querySelectorAll(".opcion").forEach(el=>el.onclick=()=>responder(+el.dataset.o));
+ $("reloj").textContent=tiempo;
+ intervalo=setInterval(()=>{
+ tiempo--;$("reloj").textContent=tiempo;
+ if(tiempo<=5)$("reloj").style.color="var(--rojo)";
+ if(tiempo<=0){clearInterval(intervalo);responder(-1)}
+ },1000);
+}
+
+function responder(elegida){
+ clearInterval(intervalo);
+ const i=orden[actual],p=preguntas[i],correcta=p[2];
+ const ok=elegida===correcta;
+ respuestas.push({num:actual+1,pregunta:p[0],elegida:elegida,correcta:correcta,textoElegida:elegida>=0?p[1][elegida]:"Sin respuesta",textoCorrecta:p[1][correcta],ok:ok});
+ document.querySelectorAll(".opcion").forEach(el=>{
+ const o=+el.dataset.o;
+ if(o===correcta)el.classList.add("correcta");
+ if(elegida===o&&!ok)el.classList.add("incorrecta");
+ el.onclick=null;
+ });
+ const f=$("feedback");
+ if(ok){f.style.color="var(--verde)";f.textContent="✔ ¡Correcto!";sonidoOk()}
+ else if(elegida===-1){f.style.color="var(--rojo)";f.textContent="⏱ Tiempo agotado. La respuesta correcta era: "+letras[correcta]+") "+p[1][correcta];sonidoMal()}
+ else{f.style.color="var(--rojo)";f.textContent="✘ Incorrecto. La respuesta correcta era: "+letras[correcta]+") "+p[1][correcta];sonidoMal()}
+ setTimeout(()=>{
+ actual++;
+ if(actual<preguntas.length)mostrarPregunta();
+ else finalizar();
+ },1600);
+}
+
+function finalizar(){
+ terminado=true;clearInterval(intervalo);
+ const aciertos=respuestas.filter(r=>r.ok).length;
+ const nota=(aciertos/preguntas.length*10).toFixed(1);
+ $("cuestionario").innerHTML="";
+ $("timerBox").classList.add("oculto");$("barra").classList.add("oculto");
+ $("resultado").classList.remove("oculto");
+ $("resultado").innerHTML=`<h2>Resultado</h2>
+ <p><strong>Alumno/a:</strong> ${$("nombre").value} ${$("apellido1").value} ${$("apellido2").value}</p>
+ <p><strong>Fecha:</strong> ${$("fecha").value||"No indicada"}</p>
+ <p><strong>Aciertos:</strong> ${aciertos} de ${preguntas.length}</p>
+ <p><strong>Calificación orientativa:</strong> ${nota} / 10</p>
+ <p>Recuerda: este cuestionario es de conocimientos previos y no cuenta como examen.</p>`;
+ if(aciertos>=15)sonidoFin();else sonidoMal();
+ $("btnDescargar").classList.remove("oculto");
+ $("btnRepetir").classList.remove("oculto");
+ $("btnEmpezar").classList.remove("oculto");
+ $("btnEmpezar").textContent="Volver a empezar";
+}
+
+function descargarPDF(){
+ const {jsPDF}=window.jspdf;
+ const doc=new jsPDF({unit:"mm",format:"a4"});
+ const nombre=[$("nombre").value,$("apellido1").value,$("apellido2").value].filter(Boolean).join(" ");
+ let y=18;
+ doc.setFontSize(16);doc.text("Cuestionario de conocimientos previos",105,y,{align:"center"});y+=8;
+ doc.setFontSize(11);doc.text("Curso: ADGD038PO – Contabilidad de Costes",105,y,{align:"center"});y+=10;
+ doc.text("Alumno/a: "+nombre,14,y);y+=7;
+ doc.text("Fecha: "+($("fecha").value||"No indicada"),14,y);y+=7;
+ const aciertos=respuestas.filter(r=>r.ok).length;
+ doc.text(`Aciertos: ${aciertos} / ${preguntas.length}  |  Calificación orientativa: ${(aciertos/preguntas.length*10).toFixed(1)} / 10`,14,y);y+=10;
+ respuestas.forEach(r=>{
+ if(y>265){doc.addPage();y=18}
+ doc.setFontSize(10);doc.setFont(undefined,"bold");
+ doc.text(`${r.num}. ${r.pregunta}`,14,y,{maxWidth:180});y+=6;
+ doc.setFont(undefined,"normal");
+ doc.text(`Tu respuesta: ${r.elegida>=0?letras[r.elegida]+") "+r.textoElegida:"Sin respuesta"}`,18,y,{maxWidth:175});y+=5;
+ doc.text(`Correcta: ${letras[r.correcta]}) ${r.textoCorrecta}`,18,y,{maxWidth:175});y+=5;
+ doc.text(r.ok?"Resultado: Correcta":"Resultado: Incorrecta",18,y);y+=8;
+ });
+ doc.save("Cuestionario_ADGD038PO_"+nombre.replace(/\s+/g,"_")+".pdf");
+}
+
+$("btnEmpezar").onclick=iniciar;
+$("btnDescargar").onclick=descargarPDF;
+$("btnRepetir").onclick=iniciar;
+</script>
+</body>
+</html>
