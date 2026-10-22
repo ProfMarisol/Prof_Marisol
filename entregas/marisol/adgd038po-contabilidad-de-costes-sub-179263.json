@@ -1,0 +1,28 @@
+{
+  "submission": {
+    "id": "sub-1792630049716",
+    "studentId": "user-teacher-1790541287876",
+    "studentName": "Marisol Delgado",
+    "moduleId": "mod-1792629213854",
+    "moduleTitle": "ADGD038PO · Contabilidad de Costes",
+    "answers": {},
+    "score": 10,
+    "maxScore": 10,
+    "percentage": 100,
+    "submittedAt": "2026-10-22T00:47:29.716Z",
+    "feedback": "¡Excelente trabajo! Has demostrado un dominio notable de los conceptos."
+  },
+  "student": {
+    "id": "user-teacher-1790541287876",
+    "username": "marisol",
+    "name": "Marisol Delgado",
+    "gradeGroup": "Sage 50"
+  },
+  "module": {
+    "id": "mod-1792629213854",
+    "title": "ADGD038PO · Contabilidad de Costes",
+    "subject": "Matemáticas",
+    "author": "Marisol Delgado"
+  },
+  "savedAt": "2026-10-22T00:47:30.191Z"
+}
